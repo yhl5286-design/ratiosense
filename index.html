@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>RatioSense — 비율 탐험</title>
+<style>
+:root{
+  --bg:#FAF6F0;--card:#fff;--text:#2D3436;--text-sub:#7F8C8D;
+  --red:#E74C3C;--red-light:#FDEDEC;
+  --yellow:#F1C40F;--yellow-light:#FEF9E7;
+  --blue:#2980B9;--blue-light:#EBF5FB;
+  --teal:#00B894;--teal-light:#D5F5ED;
+  --purple:#8E44AD;--purple-light:#F4ECF7;
+  --coral:#E74C3C;--gold:#F39C12;
+  --orange:#E67E22;--orange-light:#FDF2E9;
+  --navy:#2C3E50;--navy-light:#EBF0F5;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.05);
+  --shadow-md:0 4px 16px rgba(0,0,0,.07);
+  --radius:20px;--radius-sm:14px;
+  --font:"Apple SD Gothic Neo","맑은 고딕","Malgun Gothic",system-ui,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:17px;-webkit-font-smoothing:antialiased}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;
+  background-image:radial-gradient(circle at 1px 1px,rgba(0,0,0,.025) 1px,transparent 0);background-size:28px 28px;}
+
+/* ── Header ── */
+header{max-width:1400px;margin:0 auto;padding:20px 40px 0;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.logo{display:flex;align-items:center;gap:12px}
+.logo-mark{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,var(--red),var(--yellow),var(--blue));box-shadow:var(--shadow-sm)}
+.logo h1{font-size:1.5rem;font-weight:800;letter-spacing:-.03em}
+.logo h1 span{font-weight:400;font-size:.75em;color:var(--text-sub);margin-left:6px}
+
+/* ── Tabs ── */
+.tab-bar{max-width:1400px;margin:16px auto 0;padding:0 40px;display:flex;gap:6px;overflow-x:auto}
+.tab-btn{
+  padding:12px 20px;border-radius:var(--radius) var(--radius) 0 0;border:none;
+  font-family:var(--font);font-size:.85rem;font-weight:700;cursor:pointer;
+  transition:all .3s;background:#EDE7E0;color:var(--text-sub);white-space:nowrap;flex-shrink:0;
+}
+.tab-btn.active{background:var(--card);color:var(--text);box-shadow:var(--shadow-sm)}
+
+/* ── Main ── */
+main{max-width:1400px;margin:0 auto;padding:0 40px 60px}
+.lab{background:var(--card);border-radius:0 0 var(--radius) var(--radius);box-shadow:var(--shadow-md);padding:36px;display:none;animation:fadeUp .4s ease}
+.lab.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+.stitle{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.badge{padding:4px 12px;border-radius:100px;font-size:.7rem;font-weight:700}
+.act-btn{padding:8px 18px;border-radius:100px;border:2px solid #E0E0E0;background:#fff;font-family:var(--font);font-size:.78rem;font-weight:700;cursor:pointer;transition:all .2s;color:var(--text-sub)}
+.act-btn:hover{border-color:var(--coral);color:var(--coral)}
+.feedback{margin-top:10px;padding:10px 16px;border-radius:var(--radius-sm);font-size:.85rem;font-weight:700;text-align:center;animation:fadeUp .3s}
+.feedback.success{background:var(--teal-light);color:var(--teal)}
+.feedback.hint{background:#FFF3CD;color:#856404}
+
+/* ══════════════════════
+   1. COLOR LAB
+   ══════════════════════ */
+.color-layout{display:grid;grid-template-columns:320px 1fr;gap:28px;min-height:480px}
+.droppers{display:flex;gap:14px;justify-content:center;margin-bottom:20px}
+.dropper{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;transition:transform .15s;user-select:none}
+.dropper:hover{transform:translateY(-3px)}.dropper:active{transform:scale(.95)}
+.dropper-body{width:54px;height:86px;border-radius:10px 10px 16px 16px;position:relative;overflow:hidden;box-shadow:var(--shadow-sm);transition:box-shadow .2s}
+.dropper:hover .dropper-body{box-shadow:0 4px 16px rgba(0,0,0,.15)}
+.dropper-body::before{content:'';position:absolute;top:-13px;left:50%;transform:translateX(-50%);width:17px;height:17px;border-radius:4px;background:inherit;filter:brightness(.85)}
+.dropper-body::after{content:'';position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);width:9px;height:9px;border-radius:50%;background:inherit;filter:brightness(.9)}
+.dropper-fill{position:absolute;bottom:0;width:100%;transition:height .3s;border-radius:0 0 14px 14px;opacity:.7}
+.dropper-r .dropper-body{background:var(--red-light);border:2px solid var(--red)}.dropper-r .dropper-fill{background:var(--red)}
+.dropper-y .dropper-body{background:var(--yellow-light);border:2px solid var(--yellow)}.dropper-y .dropper-fill{background:var(--yellow)}
+.dropper-b .dropper-body{background:var(--blue-light);border:2px solid var(--blue)}.dropper-b .dropper-fill{background:var(--blue)}
+.dropper-label{font-size:.75rem;font-weight:700}.dropper-count{font-size:1.2rem;font-weight:800;min-width:28px;text-align:center}.dropper-unit{font-size:.6rem;color:var(--text-sub)}
+.drop-pm-btn{width:28px;height:28px;border-radius:50%;border:2px solid;background:#fff;font-size:1rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;font-family:var(--font)}
+.drop-pm-btn:hover{transform:scale(1.15);filter:brightness(.9)}.drop-pm-btn:active{transform:scale(.9)}
+
+.beaker-area{display:flex;flex-direction:column;align-items:center;gap:8px;margin:8px 0 16px}
+.beaker-wrap{position:relative;width:170px;height:190px}
+.beaker{width:130px;height:160px;margin:0 auto;border:3px solid #BDC3C7;border-top:none;border-radius:0 0 22px 22px;position:relative;overflow:hidden;background:rgba(255,255,255,.6)}
+.beaker::before{content:'';position:absolute;top:-3px;left:-11px;right:-11px;height:3px;background:#BDC3C7;border-radius:2px}
+.beaker-liquid{position:absolute;bottom:0;left:0;right:0;transition:height .4s cubic-bezier(.34,1.56,.64,1),background-color .4s;border-radius:0 0 19px 19px}
+.beaker-liquid::after{content:'';position:absolute;top:0;left:0;right:0;height:6px;background:linear-gradient(180deg,rgba(255,255,255,.35),transparent)}
+.beaker-total{font-size:.85rem;font-weight:700;color:var(--text-sub)}
+.drop-anim{position:absolute;width:10px;height:14px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;opacity:0;z-index:10;pointer-events:none;animation:dropFall .5s ease-in forwards}
+@keyframes dropFall{0%{opacity:1;transform:translateY(-30px) scale(.7)}80%{opacity:1;transform:translateY(110px) scale(1)}100%{opacity:0;transform:translateY(115px) scale(1.3,.5)}}
+
+.save-btn{padding:10px 24px;border-radius:100px;border:2px solid var(--teal);background:var(--teal-light);font-family:var(--font);font-size:.85rem;font-weight:700;color:var(--teal);cursor:pointer;transition:all .2s;margin-top:14px;width:100%}
+.save-btn:hover{background:var(--teal);color:#fff;transform:translateY(-2px)}
+
+.record-table-wrap{max-height:200px;overflow-y:auto;border-radius:var(--radius-sm);border:1px solid #EAEAEA}
+.rtbl{width:100%;border-collapse:collapse;font-size:.78rem}
+.rtbl th{background:#F8F8F8;padding:8px;font-weight:700;text-align:center;position:sticky;top:0;z-index:1;border-bottom:2px solid #E0E0E0}
+.rtbl td{padding:7px;text-align:center;border-bottom:1px solid #F0F0F0;font-variant-numeric:tabular-nums}
+.rtbl tr.latest td{background:#FFF9E6}
+.chip-sm{width:22px;height:22px;border-radius:6px;display:inline-block;vertical-align:middle;box-shadow:var(--shadow-sm);border:1px solid rgba(0,0,0,.08)}
+
+.recipe-grid{display:flex;flex-wrap:wrap;gap:14px;margin-top:10px}
+.recipe-card{width:155px;border-radius:var(--radius-sm);background:#FAFAFA;border:2px solid #E8E8E8;overflow:hidden;transition:all .3s;animation:fadeUp .3s;position:relative}
+.recipe-card:hover{box-shadow:var(--shadow-md);transform:translateY(-3px)}
+.recipe-color{width:100%;height:90px;display:flex;align-items:center;justify-content:center}
+.recipe-color-label{font-size:1.4rem;font-weight:900;color:rgba(255,255,255,.7);text-shadow:0 1px 4px rgba(0,0,0,.2)}
+.recipe-body{padding:10px 12px}
+.recipe-drops{font-size:.78rem;font-weight:700;line-height:1.5}
+.recipe-drops .r{color:var(--red)}.recipe-drops .y{color:#C29200}.recipe-drops .b{color:var(--blue)}
+.recipe-total{font-size:.68rem;color:var(--text-sub);margin-top:2px}
+.recipe-delete{position:absolute;top:5px;right:5px;width:22px;height:22px;border-radius:50%;border:none;background:rgba(0,0,0,.25);color:#fff;font-size:.6rem;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s}
+.recipe-card:hover .recipe-delete{opacity:1}.recipe-delete:hover{background:var(--red)}
+.recipe-match-group{border-radius:var(--radius-sm);overflow:hidden;border:3px solid var(--teal);background:linear-gradient(135deg,#F0FFF8,#E8FFF4);width:100%;animation:matchGlow .6s}
+@keyframes matchGlow{0%{box-shadow:0 0 0 0 rgba(0,184,148,.5)}50%{box-shadow:0 0 24px 6px rgba(0,184,148,.3)}100%{box-shadow:none}}
+.match-header{padding:10px 16px;background:var(--teal);color:#fff;font-size:.82rem;font-weight:800}
+.match-cards{display:flex;flex-wrap:wrap;gap:0;padding:10px}
+.match-cards .recipe-card{border-color:transparent;background:rgba(255,255,255,.6)}
+.recipe-empty{text-align:center;padding:24px;color:var(--text-sub);font-size:.85rem;font-style:italic;width:100%}
+
+/* ══════════════════════
+   2. SOUND LAB
+   ══════════════════════ */
+.sound-layout{display:grid;grid-template-columns:1fr 1fr;gap:32px}
+.towers-area{display:flex;gap:40px;justify-content:center;align-items:flex-end;padding:20px 0}
+.tower{display:flex;flex-direction:column;align-items:center;gap:6px}
+.tower-label{font-size:.85rem;font-weight:800}
+.tower-stack{width:66px;display:flex;flex-direction:column-reverse;gap:3px;min-height:210px}
+.tower-block{width:66px;height:19px;border-radius:7px;box-shadow:var(--shadow-sm)}
+.tower-block.pop-in{animation:blockPop .35s cubic-bezier(.34,1.56,.64,1)}
+@keyframes blockPop{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+.tower-a .tower-block{background:linear-gradient(135deg,#E74C3C,#C0392B)}
+.tower-b .tower-block{background:linear-gradient(135deg,#2980B9,#2471A3)}
+.tower-count{font-size:1.5rem;font-weight:900}
+.tower-btns{display:flex;gap:5px}
+.tower-btn{width:40px;height:40px;border-radius:50%;border:2px solid #E0E0E0;background:#fff;font-size:1.3rem;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;font-family:var(--font);color:var(--text)}
+.tower-btn:hover{border-color:var(--purple);color:var(--purple);transform:scale(1.1)}
+.play-btn{width:68px;height:68px;border-radius:50%;border:none;background:linear-gradient(135deg,var(--purple),#6C3483);color:#fff;font-size:1.5rem;cursor:pointer;box-shadow:0 4px 16px rgba(142,68,173,.35);display:flex;align-items:center;justify-content:center;transition:all .2s}
+.play-btn:hover{transform:scale(1.08)}.play-btn:active{transform:scale(.95)}
+.play-btn.playing{animation:pulseGlow 1.2s ease-in-out infinite}
+@keyframes pulseGlow{0%,100%{box-shadow:0 4px 16px rgba(142,68,173,.35)}50%{box-shadow:0 4px 30px rgba(142,68,173,.6)}}
+.harmony-face{font-size:2.8rem;line-height:1}.harmony-label{font-size:.9rem;font-weight:700;margin-top:4px;min-height:1.2em}
+.wave-vis{display:flex;gap:4px;align-items:flex-end;height:40px;justify-content:center;margin-top:8px}
+.wave-bar{width:5px;border-radius:3px;background:var(--purple);opacity:.3;transition:height .15s}
+.wave-bar.active{opacity:1;animation:waveMove .5s ease-in-out infinite alternate}
+@keyframes waveMove{from{transform:scaleY(.4)}to{transform:scaleY(1)}}
+.snd-tbl{width:100%;border-collapse:collapse;font-size:.78rem}
+.snd-tbl th{background:#F8F8F8;padding:8px;font-weight:700;text-align:center;border-bottom:2px solid #E0E0E0}
+.snd-tbl td{padding:7px;text-align:center;border-bottom:1px solid #F0F0F0}
+.snd-tbl tr.latest td{background:#F4ECF7}
+.replay-btn{padding:4px 12px;border-radius:100px;border:1px solid var(--purple);background:var(--purple-light);color:var(--purple);font-family:var(--font);font-size:.68rem;font-weight:700;cursor:pointer;transition:all .2s}
+.replay-btn:hover{background:var(--purple);color:#fff}
+.task-bar{margin-top:20px;padding:14px 18px;border-radius:var(--radius-sm);display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.task-bar-purple{border:2px solid var(--purple);background:linear-gradient(135deg,#FBF5FF,#F4ECF7)}
+.task-title{font-size:.9rem;font-weight:700}.task-desc{font-size:.82rem;color:var(--text-sub);margin-top:2px}
+.task-btn{padding:8px 16px;border-radius:100px;border:none;font-family:var(--font);font-size:.78rem;font-weight:700;cursor:pointer;transition:all .15s}
+.task-btn:hover{transform:translateY(-1px)}
+.task-btn-go{background:var(--teal);color:#fff}.task-btn-reset{background:#EAEAEA;color:var(--text-sub)}
+
+/* ══════════════════════
+   2.5 HARMONY ROOM (화음 감상실)
+   ══════════════════════ */
+.harmony-layout{display:grid;grid-template-columns:1fr 1fr;gap:32px}
+.piano-wrap{display:flex;justify-content:center;gap:5px;padding:16px 8px;user-select:none}
+.piano-key{position:relative;width:72px;height:160px;background:linear-gradient(180deg,#fafafa,#e8e8e8);border:2px solid #bbb;border-radius:0 0 10px 10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:10px;transition:all .15s;box-shadow:0 3px 6px rgba(0,0,0,.1)}
+.piano-key:hover{background:linear-gradient(180deg,#f0f8ff,#dbeafe);border-color:var(--blue)}
+.piano-key:active{transform:translateY(2px);box-shadow:0 1px 2px rgba(0,0,0,.1)}
+.piano-key.pk-ref{border-color:var(--coral);background:linear-gradient(180deg,#fff0f0,#ffe0e0);box-shadow:0 0 0 3px rgba(231,76,60,.2)}
+.piano-key.pk-sel{border-color:var(--blue);background:linear-gradient(180deg,#f0f8ff,#d0eaff);box-shadow:0 0 0 3px rgba(41,128,185,.2)}
+.piano-key.pk-press{animation:keyBounce .3s ease}
+@keyframes keyBounce{0%{transform:translateY(0)}30%{transform:translateY(3px)}100%{transform:translateY(0)}}
+.pk-note{font-size:1rem;font-weight:800;margin-bottom:2px}
+.pk-hz{font-size:.65rem;color:var(--text-sub);font-weight:600}
+.pk-ratio{font-size:.65rem;color:var(--coral);font-weight:700;margin-top:1px}
+.pk-tag{position:absolute;top:5px;left:50%;transform:translateX(-50%);font-size:.55rem;font-weight:800;color:#fff;background:var(--coral);padding:2px 7px;border-radius:8px;white-space:nowrap}
+.harmony-info{padding:20px;background:#fff;border-radius:var(--radius-sm);box-shadow:var(--shadow-sm);text-align:center}
+.hi-title{font-size:1.15rem;font-weight:800;margin-bottom:6px}
+.hi-ratio-big{font-size:1.8rem;font-weight:900;color:var(--coral);margin:6px 0}
+.hi-detail{font-size:.88rem;color:var(--text-sub);line-height:1.7}
+.harmony-btns{display:flex;gap:10px;justify-content:center;margin-top:14px}
+.hm-btn{padding:10px 22px;border:none;border-radius:100px;font-family:var(--font);font-size:.85rem;font-weight:700;cursor:pointer;transition:all .2s}
+.hm-btn:hover{transform:translateY(-2px)}.hm-btn:active{transform:scale(.95)}
+.hm-btn-purple{background:linear-gradient(135deg,var(--purple),#6C3483);color:#fff}
+.hm-btn-teal{background:var(--teal);color:#fff}
+.wave-card{border-radius:var(--radius-sm);overflow:hidden;border:1px solid #eee;margin-top:16px}
+.wave-canvas{width:100%;height:180px;display:block;background:#fff}
+.wave-legend{display:flex;gap:16px;justify-content:center;padding:8px;font-size:.75rem;font-weight:600;background:#FAFAFA}
+.wave-legend-item{display:flex;align-items:center;gap:5px}
+.wave-dot{width:10px;height:3px;border-radius:2px}
+.wave-explain{padding:14px 18px;background:linear-gradient(135deg,#f0fff4,#e8f8f0);border-radius:var(--radius-sm);font-size:.85rem;line-height:1.7;border:1px solid #b2dfdb;margin-top:10px}
+.star-rating{color:#FFD700;font-size:1.1rem;letter-spacing:2px}
+
+/* ══════════════════════
+   3. SCALE MODEL (축소모형 — 미션 기반)
+   ══════════════════════ */
+.mission-card{flex:1;min-width:180px;padding:18px;border-radius:var(--radius-sm);border:3px solid #E0E0E0;background:#fff;cursor:pointer;transition:all .3s;text-align:center}
+.mission-card:hover{border-color:var(--navy);transform:translateY(-3px);box-shadow:var(--shadow-md)}
+.mission-card.active{border-color:var(--navy);background:var(--navy-light)}
+.mission-icon{font-size:2rem;margin-bottom:6px}
+.mission-title{font-size:.9rem;font-weight:800}
+.mission-desc{font-size:.72rem;color:var(--text-sub);margin-top:2px}
+.mission-story{background:linear-gradient(135deg,#EBF0F5,#D5DBDB);border-radius:var(--radius-sm);padding:20px;display:flex;align-items:flex-start;gap:16px}
+.ms-emoji{font-size:2.5rem;flex-shrink:0}
+.ms-text{font-size:.88rem;line-height:1.7;color:var(--text)}
+.mission-constraint{background:#FFF8E1;border:2px solid #FFE082;border-radius:var(--radius-sm);padding:14px 18px;margin-top:12px;font-size:.82rem;line-height:1.6;color:var(--text)}
+.model-layout{display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start}
+.model-scene{background:#F8F9FA;border-radius:var(--radius-sm);padding:24px;position:relative;min-height:280px;display:flex;align-items:center;justify-content:center}
+.model-box{border:3px solid var(--navy);border-radius:8px;position:relative;transition:all .5s cubic-bezier(.34,1.56,.64,1);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--navy)}
+.model-box .dim-label{position:absolute;font-size:.7rem;font-weight:700;color:var(--text-sub);white-space:nowrap}
+.model-box .dim-w{bottom:-22px;left:50%;transform:translateX(-50%)}
+.model-box .dim-h{right:-50px;top:50%;transform:translateY(-50%)}
+.model-judge{padding:16px;border-radius:var(--radius-sm);font-size:.88rem;font-weight:700;text-align:center;margin-top:10px;animation:fadeUp .3s}
+.model-judge.correct{background:var(--teal-light);color:var(--teal);border:2px solid var(--teal)}
+.model-judge.wrong{background:#FDEDEC;color:var(--red);border:2px solid var(--red)}
+.model-judge.close{background:#FFF3CD;color:#856404;border:2px solid #FFE082}
+.model-controls{display:flex;flex-direction:column;gap:20px}
+.input-group{display:flex;flex-direction:column;gap:6px}
+.input-group label{font-size:.8rem;font-weight:700;color:var(--text-sub)}
+.input-row{display:flex;align-items:center;gap:10px}
+.num-input{width:80px;padding:8px 12px;border:2px solid #E0E0E0;border-radius:10px;font-family:var(--font);font-size:1rem;font-weight:700;text-align:center;transition:border-color .2s}
+.num-input:focus{outline:none;border-color:var(--blue)}
+.input-unit{font-size:.8rem;color:var(--text-sub);font-weight:600}
+.scale-selector{display:flex;gap:6px;flex-wrap:wrap}
+.scale-chip{padding:8px 16px;border-radius:100px;border:2px solid #E0E0E0;background:#fff;font-family:var(--font);font-size:.82rem;font-weight:700;cursor:pointer;transition:all .2s}
+.scale-chip:hover{border-color:var(--blue)}.scale-chip.active{background:var(--blue);border-color:var(--blue);color:#fff}
+.result-box{background:linear-gradient(135deg,var(--blue-light),#D6EAF8);border-radius:var(--radius-sm);padding:20px;margin-top:8px}
+.result-title{font-size:.85rem;font-weight:800;color:var(--blue);margin-bottom:10px}
+.result-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(0,0,0,.06);font-size:.85rem}
+.result-row:last-child{border:none}
+.result-label{color:var(--text-sub)}.result-val{font-weight:800;color:var(--navy)}
+.compare-visual{display:flex;align-items:flex-end;gap:20px;justify-content:center;margin-top:20px}
+.compare-item{text-align:center}
+.compare-item .box{border:2px solid var(--navy);border-radius:4px;transition:all .4s;margin:0 auto}
+.compare-item .label{font-size:.7rem;font-weight:700;color:var(--text-sub);margin-top:6px}
+
+/* ══════════════════════
+   4. RECIPE GAME (과일 화채 게임)
+   ══════════════════════ */
+.recipe-layout{display:grid;grid-template-columns:1fr 1fr;gap:36px}
+.recipe-panel{background:#F8F9FA;border-radius:var(--radius-sm);padding:24px}
+.ig-row{display:flex;align-items:center;gap:10px;padding:8px 12px;background:#fff;border-radius:var(--radius-sm);box-shadow:var(--shadow-sm);transition:all .2s}
+.ig-row.locked{background:#FFF8E1;border:2px solid #FFE082}
+.ig-row .ig-icon{font-size:1.3rem;width:28px;text-align:center}
+.ig-row .ig-name{font-weight:700;font-size:.85rem;min-width:50px}
+.ig-row .ig-count{font-size:1.1rem;font-weight:900;color:var(--orange);min-width:36px;text-align:center}
+.ig-row .ig-unit{font-size:.72rem;color:var(--text-sub)}
+.ig-btn{width:36px;height:36px;border-radius:50%;border:2px solid #E0E0E0;background:#fff;font-size:1.1rem;font-weight:700;cursor:pointer;font-family:var(--font);transition:all .15s;display:flex;align-items:center;justify-content:center;color:var(--text)}
+.ig-btn:hover{border-color:var(--orange);color:var(--orange);transform:scale(1.1)}
+.ig-btn:active{transform:scale(.92)}
+.ig-btn.disabled{opacity:.3;pointer-events:none}
+.punch-bowl{width:220px;height:180px;border:4px solid #BDC3C7;border-top:none;border-radius:0 0 50% 50%;position:relative;overflow:hidden;background:rgba(255,255,255,.5)}
+.punch-bowl::before{content:'';position:absolute;top:-4px;left:-12px;right:-12px;height:4px;background:#BDC3C7;border-radius:2px}
+.bowl-water{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(180deg,rgba(255,200,200,.3),rgba(255,150,150,.5));transition:height .3s;border-radius:0 0 50% 50%}
+.bowl-items{position:absolute;bottom:8px;left:8px;right:8px;display:flex;flex-wrap:wrap;gap:2px;justify-content:center;align-content:flex-end;z-index:1;font-size:.9rem;line-height:1.2}
+.bowl-item{animation:dropIn .3s ease}
+@keyframes dropIn{from{opacity:0;transform:translateY(-15px)}to{opacity:1;transform:none}}
+.ig-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.ig-bar-label{width:55px;font-size:.72rem;font-weight:700;text-align:right}
+.ig-bar-track{flex:1;height:12px;background:#EAEAEA;border-radius:6px;overflow:hidden;position:relative}
+.ig-bar-fill{height:100%;border-radius:6px;transition:width .3s}
+.ig-bar-target{position:absolute;top:0;height:100%;width:3px;background:var(--red);border-radius:2px;z-index:1}
+.ig-bar-val{font-size:.72rem;font-weight:800;color:var(--orange);min-width:30px}
+.rc-score-star{font-size:1.3rem;transition:transform .3s}
+.rc-score-star.earned{animation:starPop .4s ease}
+@keyframes starPop{0%{transform:scale(0)}50%{transform:scale(1.3)}100%{transform:scale(1)}}
+
+/* ── Teacher ── */
+.teacher-toggle{max-width:1400px;margin:20px auto 0;padding:0 40px}
+.teacher-toggle-btn{width:100%;padding:12px;border:2px dashed #D0D0D0;border-radius:var(--radius-sm);background:transparent;font-family:var(--font);font-size:.82rem;font-weight:600;color:var(--text-sub);cursor:pointer;transition:all .3s;display:flex;align-items:center;justify-content:center;gap:8px}
+.teacher-toggle-btn:hover{border-color:var(--coral);color:var(--coral)}
+.teacher-panel{max-width:1400px;margin:10px auto 0;padding:0 40px;max-height:0;overflow:hidden;transition:max-height .4s}
+.teacher-panel.open{max-height:200px}
+.teacher-inner{background:#FAFAFA;border:1px solid #E8E8E8;border-radius:var(--radius-sm);padding:18px;display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.teacher-inner label{font-size:.82rem;font-weight:600;color:var(--text-sub)}
+
+/* Success */
+.success-overlay{position:fixed;inset:0;z-index:999;pointer-events:none;display:flex;align-items:center;justify-content:center}
+.success-msg{font-size:2.4rem;font-weight:900;opacity:0;animation:successBoom .9s cubic-bezier(.34,1.56,.64,1) forwards}
+@keyframes successBoom{0%{opacity:0;transform:scale(.4)}40%{opacity:1;transform:scale(1.15)}100%{opacity:0;transform:scale(1) translateY(-25px)}}
+.sparkle{position:absolute;width:10px;height:10px;border-radius:50%;animation:sparkleFly 1s ease-out forwards}
+@keyframes sparkleFly{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--tx),var(--ty)) scale(0);opacity:0}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo"><div class="logo-mark"></div><h1>RatioSense<span>비율 탐험</span></h1></div>
+</header>
+
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('color')">&#x1f3a8; 색상 실험실</button>
+  <button class="tab-btn" onclick="switchTab('sound')">&#x1f3b5; 화음 탐험실</button>
+  <button class="tab-btn" onclick="switchTab('harmony')">&#x1f3b9; 화음 감상실</button>
+  <button class="tab-btn" onclick="switchTab('model')">&#x1f3e0; 축소모형 만들기</button>
+  <button class="tab-btn" onclick="switchTab('recipe')">&#x1f373; 화채 만들기</button>
+</div>
+
+<main>
+
+<!-- ════════ 1. COLOR LAB ════════ -->
+<div class="lab active" id="lab-color">
+  <div class="color-layout">
+    <div>
+      <div class="stitle"><span class="badge" style="background:var(--red-light);color:var(--red)">삼원색</span> 스포이드로 물감을 넣어 보세요</div>
+      <div class="droppers">
+        <div class="dropper dropper-r">
+          <div class="dropper-body" onclick="addDrop('r')"><div class="dropper-fill" id="dfR" style="height:100%"></div></div>
+          <div class="dropper-label" style="color:var(--red)">빨강</div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <button class="drop-pm-btn" onclick="removeDrop('r')" style="border-color:var(--red);color:var(--red)">−</button>
+            <div class="dropper-count" style="color:var(--red)" id="cntR">0</div>
+            <button class="drop-pm-btn" onclick="addDrop('r')" style="border-color:var(--red);color:var(--red)">+</button>
+          </div>
+          <div class="dropper-unit">방울</div>
+        </div>
+        <div class="dropper dropper-y">
+          <div class="dropper-body" onclick="addDrop('y')"><div class="dropper-fill" id="dfY" style="height:100%"></div></div>
+          <div class="dropper-label" style="color:#C29200">노랑</div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <button class="drop-pm-btn" onclick="removeDrop('y')" style="border-color:#C29200;color:#C29200">−</button>
+            <div class="dropper-count" style="color:#C29200" id="cntY">0</div>
+            <button class="drop-pm-btn" onclick="addDrop('y')" style="border-color:#C29200;color:#C29200">+</button>
+          </div>
+          <div class="dropper-unit">방울</div>
+        </div>
+        <div class="dropper dropper-b">
+          <div class="dropper-body" onclick="addDrop('b')"><div class="dropper-fill" id="dfB" style="height:100%"></div></div>
+          <div class="dropper-label" style="color:var(--blue)">파랑</div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <button class="drop-pm-btn" onclick="removeDrop('b')" style="border-color:var(--blue);color:var(--blue)">−</button>
+            <div class="dropper-count" style="color:var(--blue)" id="cntB">0</div>
+            <button class="drop-pm-btn" onclick="addDrop('b')" style="border-color:var(--blue);color:var(--blue)">+</button>
+          </div>
+          <div class="dropper-unit">방울</div>
+        </div>
+      </div>
+      <div class="beaker-area">
+        <div class="beaker-wrap"><div class="beaker" id="beaker"><div class="beaker-liquid" id="bLiq"></div></div></div>
+        <div class="beaker-total" id="bTotal">0 mL</div>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:center">
+        <button class="act-btn" onclick="undoDrop()">&#x21A9; 되돌리기</button>
+        <button class="act-btn" onclick="clearBeaker()">&#x1F5D1; 비커 비우기</button>
+      </div>
+      <button class="save-btn" onclick="saveRecipe()">&#x1F4BE; 이 색 레시피 저장</button>
+      <div id="cFB"></div>
+    </div>
+    <div>
+      <div class="stitle"><span class="badge" style="background:#F0F0F0;color:var(--text-sub)">기록</span> 방울 기록</div>
+      <div class="record-table-wrap"><table class="rtbl"><thead><tr><th>#</th><th style="color:var(--red)">빨</th><th style="color:#C29200">노</th><th style="color:var(--blue)">파</th><th>합계</th><th>색상</th></tr></thead><tbody id="cLog"></tbody></table></div>
+      <div style="margin-top:20px">
+        <div class="stitle"><span class="badge" style="background:var(--teal-light);color:var(--teal)">비교</span> 저장된 레시피 <button class="act-btn" style="margin-left:auto;font-size:.68rem;padding:4px 10px" onclick="clearAllRecipes()">전체 삭제</button></div>
+        <div class="recipe-grid" id="recipeGrid"><div class="recipe-empty">물감을 섞고 "레시피 저장"을 눌러 보세요!</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ 2. SOUND LAB ════════ -->
+<div class="lab" id="lab-sound">
+  <div class="stitle"><span class="badge" style="background:var(--purple-light);color:var(--purple)">소리</span> 블록을 쌓아 두 음의 어울림을 탐험해 보세요</div>
+  <div class="sound-layout">
+    <div>
+      <div class="towers-area">
+        <div class="tower tower-a"><div class="tower-count" style="color:var(--red)" id="tcA">2</div><div class="tower-label" style="color:var(--red)">음 A</div><div class="tower-stack" id="tsA"></div><div class="tower-btns"><button class="tower-btn" onclick="chgT('a',-1)">&#x2212;</button><button class="tower-btn" onclick="chgT('a',1)">+</button></div></div>
+        <div class="tower tower-b"><div class="tower-count" style="color:var(--blue)" id="tcB">3</div><div class="tower-label" style="color:var(--blue)">음 B</div><div class="tower-stack" id="tsB"></div><div class="tower-btns"><button class="tower-btn" onclick="chgT('b',-1)">&#x2212;</button><button class="tower-btn" onclick="chgT('b',1)">+</button></div></div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:12px;padding:16px 0">
+        <button class="play-btn" id="sPlayBtn" onclick="toggleSnd()"><span id="sPlayIco">&#9654;</span></button>
+        <div style="text-align:center"><div class="harmony-face" id="hFace">&#x1F60A;</div><div class="harmony-label" id="hLabel">재생해서 들어 보세요!</div></div>
+        <div class="wave-vis" id="waveVis"></div>
+      </div>
+      <div class="task-bar task-bar-purple">
+        <div style="flex:1"><div class="task-title">어울리는 소리 찾기</div><div class="task-desc" id="sTDesc">블록을 조절하고 재생해서 잘 어울리는 소리 조합을 3개 찾아보세요!</div></div>
+        <div style="display:flex;gap:6px"><button class="task-btn task-btn-go" onclick="recSnd()">기록하기</button><button class="task-btn task-btn-reset" onclick="rstSndTask()">리셋</button></div>
+      </div>
+      <div id="sFB"></div>
+    </div>
+    <div>
+      <div class="stitle"><span class="badge" style="background:#F0F0F0;color:var(--text-sub)">기록</span> 소리 기록</div>
+      <div class="record-table-wrap" style="max-height:400px"><table class="snd-tbl"><thead><tr><th>#</th><th style="color:var(--red)">음A</th><th style="color:var(--blue)">음B</th><th>어울림</th><th>다시듣기</th></tr></thead><tbody id="sLog"></tbody></table></div>
+      <div style="margin-top:12px;display:flex;gap:8px"><button class="act-btn" onclick="clrSndRec()">&#x1F5D1; 기록 비우기</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ 2.5 HARMONY ROOM (화음 감상실) ════════ -->
+<div class="lab" id="lab-harmony">
+  <div class="stitle"><span class="badge" style="background:var(--purple-light);color:var(--purple)">어울림 알기</span> 기본음 '도'와 다른 음을 비교해 보세요</div>
+  <div class="harmony-layout">
+    <div>
+      <div class="piano-wrap" id="pianoKeys"></div>
+      <div class="harmony-btns">
+        <button class="hm-btn hm-btn-purple" onclick="pianoPlayTogether()">&#x1F3B6; 함께 듣기</button>
+        <button class="hm-btn hm-btn-teal" onclick="pianoPlaySeq()">&#x27A1; 순서대로 듣기</button>
+      </div>
+      <div class="harmony-info" id="pianoInfo">
+        <div class="hi-title">피아노 건반을 눌러 보세요!</div>
+        <div class="hi-detail">도(기본음)와 비교할 음을 선택하면<br>주파수 비율과 어울림을 확인할 수 있어요.</div>
+      </div>
+    </div>
+    <div>
+      <div class="stitle"><span class="badge" style="background:var(--teal-light);color:var(--teal)">파형</span> 두 소리의 파형을 비교해요</div>
+      <div class="wave-card" id="waveCard" style="display:none">
+        <canvas class="wave-canvas" id="waveCanvas" width="600" height="180"></canvas>
+        <div class="wave-legend">
+          <div class="wave-legend-item"><div class="wave-dot" style="background:var(--coral)"></div> 도</div>
+          <div class="wave-legend-item"><div class="wave-dot" style="background:var(--blue)"></div> 비교음</div>
+          <div class="wave-legend-item"><div class="wave-dot" style="background:var(--teal);width:8px;height:8px;border-radius:50%"></div> 만남점</div>
+        </div>
+      </div>
+      <div class="wave-explain" id="waveExplain" style="display:none"></div>
+      <div style="margin-top:16px;padding:16px;background:var(--purple-light);border-radius:var(--radius-sm)">
+        <div style="font-size:.85rem;font-weight:700;color:var(--purple);margin-bottom:6px">&#x1F4A1; 핵심 원리</div>
+        <div style="font-size:.82rem;color:var(--text-sub);line-height:1.7">
+          비율이 <strong>단순할수록</strong>(숫자가 작을수록) 두 파형이 <strong>자주 만나고</strong> 규칙적으로 반복돼요.<br>
+          &#x2192; 그래서 <strong>잘 어울리는 소리</strong>가 됩니다!<br><br>
+          예: <strong>도:솔 = 2:3</strong> → 도가 2번 진동할 때 솔이 3번 → 자주 만남 → 아주 잘 어울림!<br>
+          예: <strong>도:시 = 128:243</strong> → 거의 안 만남 → 잘 안 어울림
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ 3. SCALE MODEL (미션 기반) ════════ -->
+<div class="lab" id="lab-model">
+  <div class="stitle"><span class="badge" style="background:var(--navy-light);color:var(--navy)">축소모형</span> 상황에 맞는 축소 비율을 찾아 문제를 해결하세요!</div>
+  <div id="missionSelect" style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:24px">
+    <div class="mission-card" id="ms0" onclick="pickMission(0)">
+      <div class="mission-icon">&#x1F3EB;</div>
+      <div class="mission-title">학교 축제 전시</div>
+      <div class="mission-desc">교실 모형을 전시대에 맞추기</div>
+    </div>
+    <div class="mission-card" id="ms1" onclick="pickMission(1)">
+      <div class="mission-icon">&#x1F697;</div>
+      <div class="mission-title">자동차 미니어처</div>
+      <div class="mission-desc">진열장에 들어가는 모형 만들기</div>
+    </div>
+    <div class="mission-card" id="ms2" onclick="pickMission(2)">
+      <div class="mission-icon">&#x1F3D7;</div>
+      <div class="mission-title">건축가 체험</div>
+      <div class="mission-desc">운동장 모형을 도화지에 그리기</div>
+    </div>
+  </div>
+  <div class="model-layout">
+    <div>
+      <div class="mission-story" id="missionStory">
+        <div class="ms-emoji" id="msEmoji">&#x1F3EB;</div>
+        <div class="ms-text" id="msText">위에서 미션을 선택하세요!</div>
+      </div>
+      <div class="mission-constraint" id="missionConstraint" style="display:none">
+        <div style="font-size:.85rem;font-weight:800;color:var(--navy);margin-bottom:8px">&#x1F4CB; 조건</div>
+        <div id="msConstraint"></div>
+      </div>
+      <div class="model-scene" id="modelScene" style="margin-top:16px">
+        <div style="text-align:center">
+          <div class="compare-visual" id="compareVis"></div>
+          <p style="font-size:.75rem;color:var(--text-sub);margin-top:16px" id="compareLabel">축소 비율을 선택하면 비교가 나타나요</p>
+        </div>
+      </div>
+    </div>
+    <div class="model-controls">
+      <div class="input-group">
+        <label>&#x1F4D0; 실제 가로</label>
+        <div class="input-row"><input class="num-input" id="realW" type="number" value="800" min="1" onchange="calcModel()"><span class="input-unit">cm</span></div>
+      </div>
+      <div class="input-group">
+        <label>&#x1F4D0; 실제 세로</label>
+        <div class="input-row"><input class="num-input" id="realH" type="number" value="600" min="1" onchange="calcModel()"><span class="input-unit">cm</span></div>
+      </div>
+      <div class="input-group">
+        <label>축소 비율 선택</label>
+        <div class="scale-selector" id="scaleSelector">
+          <button class="scale-chip" onclick="setScale(5)">1:5</button>
+          <button class="scale-chip" onclick="setScale(10)">1:10</button>
+          <button class="scale-chip" onclick="setScale(20)">1:20</button>
+          <button class="scale-chip" onclick="setScale(50)">1:50</button>
+          <button class="scale-chip" onclick="setScale(100)">1:100</button>
+        </div>
+      </div>
+      <div class="result-box" id="modelResult"></div>
+      <div id="modelJudge" style="display:none"></div>
+      <button class="save-btn" style="border-color:var(--navy);color:var(--navy);background:var(--navy-light)" onclick="checkModelAnswer()">&#x2705; 정답 확인하기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ 4. RECIPE GAME (과일 화채 만들기) ════════ -->
+<div class="lab" id="lab-recipe">
+  <div class="stitle"><span class="badge" style="background:var(--orange-light);color:var(--orange)">화채 만들기</span> 기본 레시피를 보고, 인원에 맞게 재료를 직접 넣어 보세요!</div>
+  <div class="recipe-layout">
+    <div class="recipe-panel">
+      <!-- 기본 레시피 카드 -->
+      <div style="background:linear-gradient(135deg,#FFF8E1,#FFECB3);border-radius:var(--radius-sm);padding:16px;margin-bottom:16px;border:2px solid #FFE082">
+        <div style="font-size:.82rem;font-weight:800;color:#F57F17;margin-bottom:8px">&#x1F4D6; 기본 레시피 (1명분)</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap" id="baseRecipeRef"></div>
+      </div>
+      <!-- 미션 -->
+      <div style="background:linear-gradient(135deg,var(--orange-light),#FDEBD0);border-radius:var(--radius-sm);padding:16px;margin-bottom:16px;border:2px solid var(--orange)">
+        <div style="font-size:.95rem;font-weight:800;color:var(--orange)">&#x1F3AF; 미션</div>
+        <div style="font-size:1.3rem;font-weight:900;margin:6px 0" id="rcMission">6명분 화채를 만들어 보세요!</div>
+        <div style="font-size:.78rem;color:var(--text-sub)" id="rcMissionHint">3명 → 6명이면 재료를 얼마나 넣어야 할까요?</div>
+      </div>
+      <!-- 재료 넣기 버튼 -->
+      <div style="display:flex;flex-direction:column;gap:8px" id="ingrBtnArea"></div>
+      <div style="display:flex;gap:8px;margin-top:14px;justify-content:center">
+        <button class="act-btn" onclick="undoIngr()">&#x21A9; 되돌리기</button>
+        <button class="act-btn" onclick="resetBowl()">&#x1F5D1; 그릇 비우기</button>
+      </div>
+    </div>
+    <div class="recipe-panel" style="display:flex;flex-direction:column;align-items:center">
+      <!-- 화채 그릇 시각화 -->
+      <div style="font-size:.85rem;font-weight:800;color:var(--orange);margin-bottom:10px">&#x1F963; 화채 그릇</div>
+      <div class="punch-bowl" id="punchBowl">
+        <div class="bowl-items" id="bowlItems"></div>
+        <div class="bowl-water" id="bowlWater"></div>
+      </div>
+      <div style="margin-top:12px;text-align:center">
+        <div style="font-size:.82rem;font-weight:700;color:var(--text-sub)" id="bowlSummary">재료를 넣어 보세요!</div>
+      </div>
+      <!-- 넣은 재료 현황 바 -->
+      <div style="width:100%;margin-top:16px" id="bowlBars"></div>
+      <!-- 완성 버튼 -->
+      <button class="save-btn" style="margin-top:16px;border-color:var(--orange);color:var(--orange);background:var(--orange-light)" onclick="checkRecipe()">&#x2705; 완성! 비율 확인하기</button>
+      <div id="rcFB" style="width:100%"></div>
+      <!-- 스코어 -->
+      <div style="display:flex;gap:10px;margin-top:14px;align-items:center" id="rcScore"></div>
+      <!-- 다음 미션 -->
+      <button class="act-btn" id="rcNextBtn" style="display:none;margin-top:10px;border-color:var(--teal);color:var(--teal)" onclick="nextRecipeMission()">&#x27A1; 다음 미션</button>
+    </div>
+  </div>
+</div>
+
+
+</main>
+
+<div class="teacher-toggle">
+  <button class="teacher-toggle-btn" onclick="this.classList.toggle('open');document.getElementById('tPanel').classList.toggle('open')">교사용 컨트롤 &#x25BC;</button>
+</div>
+<div class="teacher-panel" id="tPanel">
+  <div class="teacher-inner">
+    <label>색상:</label><button class="act-btn" onclick="clearBeaker();clearColorLog();clearAllRecipes()">전체 리셋</button>
+    <label>화음:</label><button class="act-btn" onclick="rstSndAll()">전체 리셋</button>
+    <label>감상실:</label><button class="act-btn" onclick="resetPiano()">리셋</button>
+    <label>축소모형:</label><button class="act-btn" onclick="applyPreset()">리셋</button>
+    <label>화채:</label><button class="act-btn" onclick="startRecipeMission(0)">리셋</button>
+  </div>
+</div>
+
+<div class="success-overlay" id="successOv"></div>
+
+<script>
+// ━━━━━━ UTILS ━━━━━━
+function gcd(a,b){return b===0?a:gcd(b,a%b)}
+function simplify(a,b){const g=gcd(a,b);return[a/g,b/g]}
+function $(id){return document.getElementById(id)}
+function fb(id,type,msg){$(id).innerHTML=`<div class="feedback ${type}">${msg}</div>`;if(type==='hint')setTimeout(()=>$(id).innerHTML='',3000)}
+function boom(msg,clr){
+  const o=$('successOv');o.innerHTML=`<div class="success-msg" style="color:${clr}">${msg}</div>`;
+  for(let i=0;i<14;i++){const s=document.createElement('div');s.className='sparkle';s.style.background=['var(--red)','var(--yellow)','var(--blue)','var(--teal)','var(--purple)','var(--gold)'][i%6];s.style.setProperty('--tx',(Math.random()-.5)*300+'px');s.style.setProperty('--ty',(Math.random()-.5)*300+'px');s.style.left='50%';s.style.top='50%';o.appendChild(s)}
+  setTimeout(()=>o.innerHTML='',1200);
+}
+const ALL_TABS=['color','sound','harmony','model','recipe'];
+function switchTab(t){
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>{
+    b.classList.toggle('active',ALL_TABS[i]===t);
+  });
+  document.querySelectorAll('.lab').forEach(l=>l.classList.remove('active'));
+  $('lab-'+t).classList.add('active');
+  if(t!=='sound'&&snd.playing)stopSnd();
+  if(t==='model'&&modelScale)calcModel();
+  if(t==='recipe')renderRecipeUI();
+  if(t==='harmony'){buildPiano();stopWaveAnim()}
+}
+
+// ━━━━━━ 1. COLOR LAB ━━━━━━
+const col={r:0,y:0,b:0,hist:[],recipes:[]};
+function ryb2rgb(r,y,b){
+  const t=r+y+b;if(t===0)return[245,245,240];
+  const rn=r/t,yn=y/t,bn=b/t;
+  const C=[[255,255,255],[255,0,0],[255,255,0],[0,40,200],[255,128,0],[128,0,128],[0,128,100],[50,50,50]];
+  function L(t,a,b){return a+t*(b-a)}
+  const res=[0,0,0];
+  for(let i=0;i<3;i++){const c00=L(rn,C[0][i],C[1][i]),c01=L(rn,C[3][i],C[5][i]),c10=L(rn,C[2][i],C[4][i]),c11=L(rn,C[6][i],C[7][i]);res[i]=Math.round(L(bn,L(yn,c00,c10),L(yn,c01,c11)))}
+  return res;
+}
+function curRGB(){return ryb2rgb(col.r,col.y,col.b)}
+function rs(c){return`rgb(${c[0]},${c[1]},${c[2]})`}
+function addDrop(c){if(col[c]>=50)return;col[c]++;col.hist.push({c,d:1});
+  const d=document.createElement('div');d.className='drop-anim';d.style.background={r:'var(--red)',y:'var(--yellow)',b:'var(--blue)'}[c];d.style.left=c==='r'?'25%':c==='y'?'50%':'75%';d.style.top='0';$('beaker').appendChild(d);setTimeout(()=>d.remove(),600);
+  updColor()}
+function removeDrop(c){if(col[c]<=0)return;col[c]--;col.hist.push({c,d:-1});updColor()}
+function undoDrop(){if(!col.hist.length)return;const last=col.hist.pop();col[last.c]-=last.d;if(col[last.c]<0)col[last.c]=0;updColor()}
+function clearBeaker(){col.r=0;col.y=0;col.b=0;col.hist=[];updColor()}
+function clearColorLog(){$('cLog').innerHTML=''}
+function updColor(){
+  const{r,y,b}=col,t=r+y+b;
+  $('cntR').textContent=r;$('cntY').textContent=y;$('cntB').textContent=b;
+  $('dfR').style.height=((50-r)/50*100)+'%';$('dfY').style.height=((50-y)/50*100)+'%';$('dfB').style.height=((50-b)/50*100)+'%';
+  $('bLiq').style.height=Math.min(t/75*100,100)+'%';
+  $('bLiq').style.backgroundColor=t>0?rs(curRGB()):'transparent';
+  $('bTotal').textContent=(t*10)+' mL';
+  let n=0,cr=0,cy=0,cb=0,rows='';
+  for(const h of col.hist){if(h.c==='r')cr+=h.d;else if(h.c==='y')cy+=h.d;else cb+=h.d;cr=Math.max(0,cr);cy=Math.max(0,cy);cb=Math.max(0,cb);n++;const rgb=ryb2rgb(cr,cy,cb);
+    const sign=h.d>0?'+':'';const colName={r:'빨',y:'노',b:'파'}[h.c];
+    rows+=`<tr class="${n===col.hist.length?'latest':''}"><td>${n}</td><td>${cr||'-'}</td><td>${cy||'-'}</td><td>${cb||'-'}</td><td>${(cr+cy+cb)*10}</td><td><span class="chip-sm" style="background:${rs(rgb)}"></span></td></tr>`}
+  $('cLog').innerHTML=rows;const w=$('cLog').parentElement.parentElement;w.scrollTop=w.scrollHeight;
+}
+function normRatio(r,y,b){const v=[r,y,b].filter(x=>x>0);if(!v.length)return'0:0:0';const g=v.reduce((a,b)=>gcd(a,b));return`${r/g}:${y/g}:${b/g}`}
+function saveRecipe(){
+  const{r,y,b}=col;if(r+y+b===0){fb('cFB','hint','물감을 먼저 넣어 주세요!');return}
+  col.recipes.push({id:Date.now(),r,y,b,rgb:curRGB(),ratio:normRatio(r,y,b)});renderRecipes();
+  const m=col.recipes.filter(x=>x.ratio===normRatio(r,y,b));
+  if(m.length>=2&&new Set(m.map(x=>`${x.r}-${x.y}-${x.b}`)).size>=2){boom('같은 색!','var(--teal)');fb('cFB','success','같은 색을 다른 양으로 만들었어요!')}
+}
+function delRecipe(id){col.recipes=col.recipes.filter(x=>x.id!==id);renderRecipes()}
+function clearAllRecipes(){col.recipes=[];renderRecipes()}
+function renderRecipes(){
+  const box=$('recipeGrid');
+  if(!col.recipes.length){box.innerHTML='<div class="recipe-empty">물감을 섞고 "레시피 저장"을 눌러 보세요!</div>';return}
+  const G={};col.recipes.forEach((r,i)=>{if(!G[r.ratio])G[r.ratio]=[];G[r.ratio].push({...r,idx:i+1})});
+  let h='';
+  for(const k of Object.keys(G)){const g=G[k],diff=g.length>=2&&new Set(g.map(x=>`${x.r}-${x.y}-${x.b}`)).size>=2;
+    if(diff){const p=k.split(':').map(Number),L=[];if(p[0])L.push(`<span style="color:var(--red)">빨${p[0]}</span>`);if(p[1])L.push(`<span style="color:#C29200">노${p[1]}</span>`);if(p[2])L.push(`<span style="color:var(--blue)">파${p[2]}</span>`);
+      h+=`<div class="recipe-match-group"><div class="match-header">&#x2728; 같은 색! 기본 비율 = ${L.join(' : ')}</div><div class="match-cards">${g.map(rCard).join('')}</div></div>`}
+    else g.forEach(r=>{h+=rCard(r)})}
+  box.innerHTML=h;
+}
+function rCard(r){const d=[];if(r.r)d.push(`<span class="r">빨${r.r}</span>`);if(r.y)d.push(`<span class="y">노${r.y}</span>`);if(r.b)d.push(`<span class="b">파${r.b}</span>`);
+  return`<div class="recipe-card"><div class="recipe-color" style="background:${rs(r.rgb)}"><div class="recipe-color-label">#${r.idx}</div></div><div class="recipe-body"><div class="recipe-drops">${d.join(' + ')}</div><div class="recipe-total">합계 ${(r.r+r.y+r.b)*10}mL</div></div><button class="recipe-delete" onclick="delRecipe(${r.id})">&#x2715;</button></div>`}
+
+// ━━━━━━ 2. SOUND LAB ━━━━━━
+const snd={a:2,b:3,playing:false,ctx:null,oscs:[],gain:null,recs:[],goal:3,found:0};
+function consonance(a,b){const[sa,sb]=simplify(a,b),p=sa*sb;
+  if(p<=2)return{s:1,f:'\u{1F929}',l:'완벽한 어울림!'};if(p<=6)return{s:.85,f:'\u{1F60A}',l:'아주 잘 어울려요'};if(p<=12)return{s:.65,f:'\u{1F642}',l:'꽤 어울려요'};if(p<=20)return{s:.4,f:'\u{1F610}',l:'조금 어색해요'};if(p<=30)return{s:.2,f:'\u{1F615}',l:'잘 안 어울려요'};return{s:.08,f:'\u{1F616}',l:'많이 어긋나요'}}
+function chgT(w,d){snd[w]=Math.max(1,Math.min(10,snd[w]+d));updSnd();if(snd.playing)updFreqs()}
+function bldT(id,n){const s=$(id);s.innerHTML='';for(let i=0;i<n;i++){const b=document.createElement('div');b.className='tower-block'+(i===n-1?' pop-in':'');s.appendChild(b)}}
+function updSnd(){$('tcA').textContent=snd.a;$('tcB').textContent=snd.b;bldT('tsA',snd.a);bldT('tsB',snd.b);
+  if(snd.playing){const c=consonance(snd.a,snd.b);$('hFace').textContent=c.f;$('hLabel').textContent=c.l;$('hLabel').style.color=c.s>=.6?'var(--teal)':c.s>=.35?'#C29200':'var(--red)'}}
+function initAud(){if(!snd.ctx)snd.ctx=new(window.AudioContext||window.webkitAudioContext)();if(snd.ctx.state==='suspended')snd.ctx.resume()}
+function startSnd(){initAud();stopSndNow();const ctx=snd.ctx,b=264,[sa,sb]=simplify(snd.a,snd.b);
+  const g=ctx.createGain();g.gain.setValueAtTime(0,ctx.currentTime);g.gain.linearRampToValueAtTime(.16,ctx.currentTime+.08);g.connect(ctx.destination);
+  const o1=ctx.createOscillator();o1.type='sine';o1.frequency.value=b;o1.connect(g);o1.start();
+  const o2=ctx.createOscillator();o2.type='sine';o2.frequency.value=b*sb/sa;o2.connect(g);o2.start();
+  snd.oscs=[o1,o2];snd.gain=g;snd.playing=true;$('sPlayBtn').classList.add('playing');$('sPlayIco').innerHTML='&#9646;&#9646;';startWv();updSnd()}
+function stopSnd(){if(!snd.oscs.length)return;snd.gain.gain.linearRampToValueAtTime(0,snd.ctx.currentTime+.1);const o=snd.oscs;setTimeout(()=>o.forEach(x=>{try{x.stop()}catch(e){}}),120);snd.oscs=[];snd.playing=false;$('sPlayBtn').classList.remove('playing');$('sPlayIco').innerHTML='&#9654;';stopWv()}
+function stopSndNow(){snd.oscs.forEach(o=>{try{o.stop()}catch(e){}});snd.oscs=[]}
+function updFreqs(){if(!snd.playing||!snd.oscs.length)return;const b=264,[sa,sb]=simplify(snd.a,snd.b);snd.oscs[0].frequency.setTargetAtTime(b,snd.ctx.currentTime,.02);snd.oscs[1].frequency.setTargetAtTime(b*sb/sa,snd.ctx.currentTime,.02);updSnd()}
+function toggleSnd(){snd.playing?stopSnd():startSnd()}
+function playOnce(a,b){initAud();const ctx=snd.ctx,B=264,[sa,sb]=simplify(a,b);const g=ctx.createGain();g.gain.setValueAtTime(0,ctx.currentTime);g.gain.linearRampToValueAtTime(.14,ctx.currentTime+.05);g.gain.linearRampToValueAtTime(0,ctx.currentTime+1.5);g.connect(ctx.destination);const o1=ctx.createOscillator();o1.type='sine';o1.frequency.value=B;o1.connect(g);o1.start();o1.stop(ctx.currentTime+1.6);const o2=ctx.createOscillator();o2.type='sine';o2.frequency.value=B*sb/sa;o2.connect(g);o2.start();o2.stop(ctx.currentTime+1.6)}
+function bldWv(){const el=$('waveVis');el.innerHTML='';for(let i=0;i<10;i++){const b=document.createElement('div');b.className='wave-bar';b.style.height='6px';b.style.animationDelay=(i*.07)+'s';el.appendChild(b)}}
+function startWv(){const bars=$('waveVis').children;for(const b of bars){b.classList.add('active');b.style.height=(8+Math.random()*30)+'px'};snd.wI=setInterval(()=>{for(const b of bars)b.style.height=(6+Math.random()*34)+'px'},180)}
+function stopWv(){clearInterval(snd.wI);for(const b of $('waveVis').children){b.classList.remove('active');b.style.height='6px'}}
+function recSnd(){const c=consonance(snd.a,snd.b);snd.recs.push({a:snd.a,b:snd.b,c});renSndRec();
+  if(c.s>=.6){snd.found++;if(snd.found>=snd.goal){fb('sFB','success','모두 찾았어요!');boom('대단해요!','var(--purple)')}else fb('sFB','success',`좋아요! ${snd.found}/${snd.goal}`)}else fb('sFB','hint','더 어울리는 소리를 찾아보세요!')}
+function renSndRec(){let h='';snd.recs.forEach((r,i)=>{h+=`<tr class="${i===snd.recs.length-1?'latest':''}"><td>${i+1}</td><td>${r.a}칸</td><td>${r.b}칸</td><td>${r.c.f}</td><td><button class="replay-btn" onclick="playOnce(${r.a},${r.b})">&#9654;</button></td></tr>`});$('sLog').innerHTML=h}
+function clrSndRec(){snd.recs=[];$('sLog').innerHTML=''}
+function rstSndTask(){snd.found=0;clrSndRec();$('sFB').innerHTML='';$('sTDesc').textContent=`블록을 조절하고 재생해서 잘 어울리는 소리 조합을 ${snd.goal}개 찾아보세요!`}
+function rstSndAll(){if(snd.playing)stopSnd();snd.a=2;snd.b=3;rstSndTask();updSnd()}
+
+// ━━━━━━ 2.5 HARMONY ROOM (화음 감상실) ━━━━━━
+const C4=261.63;
+const PKEYS=[
+  {name:'도',en:'C',ratio:[1,1],color:'#E74C3C'},
+  {name:'레',en:'D',ratio:[9,8],color:'#E67E22'},
+  {name:'미',en:'E',ratio:[81,64],color:'#F1C40F'},
+  {name:'파',en:'F',ratio:[4,3],color:'#27AE60'},
+  {name:'솔',en:'G',ratio:[3,2],color:'#2980B9'},
+  {name:'라',en:'A',ratio:[27,16],color:'#8E44AD'},
+  {name:'시',en:'B',ratio:[243,128],color:'#E74C3C'},
+  {name:'높은도',en:'C5',ratio:[2,1],color:'#C0392B'},
+];
+const INTERVALS={'1:1':'같은음','9:8':'장2도','81:64':'장3도','4:3':'완전4도','3:2':'완전5도','27:16':'장6도','243:128':'장7도','2:1':'옥타브'};
+let pianoSel=4; // default: 솔
+let waveAnimId=null;
+
+function pianoFreq(i){return C4*PKEYS[i].ratio[0]/PKEYS[i].ratio[1]}
+function pianoPlayNote(freq,dur){
+  initAud();const ctx=snd.ctx,t=ctx.currentTime;
+  const o=ctx.createOscillator();o.type='sine';o.frequency.value=freq;
+  const g=ctx.createGain();g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.3,t+.03);g.gain.setValueAtTime(.2,t+dur-.15);g.gain.linearRampToValueAtTime(0,t+dur);
+  o.connect(g);g.connect(ctx.destination);o.start(t);o.stop(t+dur+.05);
+}
+function pianoPlayTwo(f1,f2,dur){pianoPlayNote(f1,dur);pianoPlayNote(f2,dur)}
+function pianoPlayTogether(){
+  const f1=C4,f2=pianoFreq(pianoSel);
+  pianoPlayTwo(f1,f2,1.5);drawWaveAnim();
+}
+async function pianoPlaySeq(){
+  const f1=C4,f2=pianoFreq(pianoSel);
+  pianoPlayNote(f1,.6);await new Promise(r=>setTimeout(r,700));pianoPlayNote(f2,.6);
+}
+function buildPiano(){
+  const wrap=$('pianoKeys');wrap.innerHTML='';
+  for(let i=0;i<PKEYS.length;i++){
+    const k=PKEYS[i],freq=pianoFreq(i);
+    const el=document.createElement('div');
+    let cls='piano-key';
+    if(i===0)cls+=' pk-ref';
+    if(i===pianoSel&&i!==0)cls+=' pk-sel';
+    el.className=cls;
+    el.innerHTML=`${i===0?'<div class="pk-tag">기본음</div>':''}<div class="pk-note" style="color:${k.color}">${k.name}</div><div class="pk-hz">${freq.toFixed(0)}Hz</div><div class="pk-ratio">${k.ratio[0]}:${k.ratio[1]}</div>`;
+    el.addEventListener('click',()=>{
+      pianoPlayNote(freq,.7);
+      el.classList.remove('pk-press');void el.offsetWidth;el.classList.add('pk-press');
+      if(i!==0){pianoSel=i;buildPiano();updatePianoInfo();drawWaveAnim()}
+      else updatePianoInfo();
+    });
+    wrap.appendChild(el);
+  }
+}
+function updatePianoInfo(){
+  const info=$('pianoInfo'),k=PKEYS[pianoSel],freq=pianoFreq(pianoSel);
+  const rk=`${k.ratio[0]}:${k.ratio[1]}`,intv=INTERVALS[rk]||'';
+  // Consonance analysis
+  const sum=k.ratio[0]+k.ratio[1],prod=k.ratio[0]*k.ratio[1];
+  let stars,level;
+  if(sum<=3){stars=5;level='완벽한 어울림'}
+  else if(sum<=5){stars=5;level='아주 잘 어울림'}
+  else if(sum<=7){stars=4;level='잘 어울림'}
+  else if(sum<=20){stars=3;level='보통'}
+  else{stars=1;level='잘 안 어울림'}
+  const starStr='\u2605'.repeat(stars)+'\u2606'.repeat(5-stars);
+  info.innerHTML=`<div class="hi-title">도 vs ${k.name}(${k.en})</div>
+    <div class="hi-ratio-big">${k.ratio[0]} : ${k.ratio[1]}</div>
+    <div class="star-rating">${starStr} ${level}</div>
+    <div class="hi-detail" style="margin-top:8px">
+      <strong>도:</strong> ${C4.toFixed(0)}Hz &nbsp; <strong>${k.name}:</strong> ${freq.toFixed(0)}Hz<br>
+      <strong>음정:</strong> ${intv}<br>
+      ${k.name}은 도의 <strong>${(k.ratio[0]/k.ratio[1]).toFixed(3)}배</strong> 주파수
+    </div>`;
+}
+function resetPiano(){pianoSel=4;buildPiano();updatePianoInfo();stopWaveAnim();$('waveCard').style.display='none';$('waveExplain').style.display='none'}
+
+// Wave animation
+function stopWaveAnim(){if(waveAnimId){cancelAnimationFrame(waveAnimId);waveAnimId=null}}
+function drawWaveAnim(){
+  stopWaveAnim();
+  const canvas=$('waveCanvas'),card=$('waveCard'),explEl=$('waveExplain');
+  card.style.display='block';explEl.style.display='block';
+  const rect=canvas.parentElement.getBoundingClientRect();
+  const dpr=2,H=180;
+  canvas.width=rect.width*dpr;canvas.height=H*dpr;
+  canvas.style.width=rect.width+'px';canvas.style.height=H+'px';
+
+  const k=PKEYS[pianoSel];
+  const f1=1,f2=k.ratio[0]/k.ratio[1];
+  const cycles=4,startTime=performance.now();
+  const P1=1500,P2=3000,TOTAL=15000;
+  const[rp,rq]=k.ratio;
+  const periodW=(rq/cycles)*rect.width;
+
+  function animate(now){
+    const elapsed=now-startTime;
+    const ctx=canvas.getContext('2d');
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    const W=rect.width,mid=H/2,amp=H*.18;
+    ctx.clearRect(0,0,W,H);
+    // center line
+    ctx.strokeStyle='#eee';ctx.lineWidth=1;ctx.setLineDash([4,4]);
+    ctx.beginPath();ctx.moveTo(0,mid);ctx.lineTo(W,mid);ctx.stroke();ctx.setLineDash([]);
+
+    const reveal1=Math.min(1,elapsed/P1);
+    const reveal2=elapsed<P1?0:Math.min(1,(elapsed-P1)/(P2-P1));
+    const flowPhase=elapsed<P2?0:((elapsed-P2)/600)*Math.PI*2;
+    const flowing=elapsed>=P2;
+
+    // Repeat period highlight
+    if(flowing&&periodW>20&&periodW<=W){
+      ctx.fillStyle='rgba(142,68,173,.06)';ctx.fillRect(0,8,periodW,H-36);
+      ctx.strokeStyle='rgba(142,68,173,.3)';ctx.lineWidth=1.5;ctx.setLineDash([5,4]);
+      ctx.beginPath();ctx.moveTo(periodW,8);ctx.lineTo(periodW,H-28);ctx.stroke();ctx.setLineDash([]);
+    }
+    // Wave 1 (도)
+    const dw1=flowing?W:Math.floor(W*reveal1);
+    if(dw1>0){ctx.strokeStyle='#E74C3C';ctx.lineWidth=2.5;ctx.beginPath();
+      for(let x=0;x<=dw1;x++){const t=(x/W)*cycles*2*Math.PI-flowPhase*f1;const y=mid-amp*Math.sin(t);x===0?ctx.moveTo(x,y):ctx.lineTo(x,y)}ctx.stroke()}
+    // Wave 2
+    const dw2=flowing?W:Math.floor(W*reveal2);
+    if(dw2>0){ctx.strokeStyle='#2980B9';ctx.lineWidth=2.5;ctx.beginPath();
+      for(let x=0;x<=dw2;x++){const t=(x/W)*cycles*2*Math.PI*f2-flowPhase*f2;const y=mid-amp*Math.sin(t);x===0?ctx.moveTo(x,y):ctx.lineTo(x,y)}ctx.stroke()}
+    // Meeting points
+    if(flowing){
+      const meets=[];
+      for(let x=0;x<W;x+=2){
+        const t1=(x/W)*cycles*2*Math.PI-flowPhase*f1;
+        const t2=(x/W)*cycles*2*Math.PI*f2-flowPhase*f2;
+        if(Math.abs(Math.sin(t1))<.12&&Math.abs(Math.sin(t2))<.12){
+          if(!meets.length||x-meets[meets.length-1]>15)meets.push(x)}
+      }
+      ctx.fillStyle='rgba(0,184,148,.3)';ctx.strokeStyle='#00B894';ctx.lineWidth=1.5;
+      for(const mx of meets){ctx.beginPath();ctx.arc(mx,mid,5,0,Math.PI*2);ctx.fill();ctx.stroke()}
+      // Repeat bracket
+      if(periodW>20&&periodW<=W){
+        const by=H-22;ctx.strokeStyle='#7c6fe0';ctx.lineWidth=2;
+        ctx.beginPath();ctx.moveTo(4,by);ctx.lineTo(4,by+12);ctx.lineTo(periodW-4,by+12);ctx.lineTo(periodW-4,by);ctx.stroke();
+        ctx.font='bold 10px sans-serif';ctx.fillStyle='#7c6fe0';ctx.textAlign='center';
+        ctx.fillText(`도 ${rq}번 = ${k.name} ${rp}번 → 반복!`,periodW/2,by+11);ctx.textAlign='left';
+      }
+      ctx.font='bold 10px sans-serif';ctx.textAlign='right';ctx.fillStyle='#00B894';ctx.globalAlpha=.8;
+      ctx.fillText(`만남점 ${meets.length}개`,W-8,16);ctx.textAlign='left';ctx.globalAlpha=1;
+    }
+    // Labels
+    ctx.font='bold 11px sans-serif';ctx.globalAlpha=.7;
+    if(reveal1>.1){ctx.fillStyle='#E74C3C';ctx.fillText('도',8,16)}
+    if(reveal2>.1){ctx.fillStyle='#2980B9';ctx.fillText(k.name,8,30)}
+    ctx.globalAlpha=1;
+    if(elapsed<TOTAL)waveAnimId=requestAnimationFrame(animate);
+  }
+  waveAnimId=requestAnimationFrame(animate);
+
+  // Update explanation
+  let desc,starsTxt;
+  const sum=rp+rq;
+  if(sum<=3){starsTxt='\u2B50\u2B50\u2B50\u2B50\u2B50';desc=`같은 음이거나 옥타브! 파형이 완전히 겹쳐요.`}
+  else if(sum<=5){starsTxt='\u2B50\u2B50\u2B50\u2B50\u2B50';desc=`도가 ${rq}번 진동할 때 ${k.name}은 ${rp}번 진동해요. 자주 만나서 아주 잘 어울려요!`}
+  else if(sum<=7){starsTxt='\u2B50\u2B50\u2B50\u2B50\u2606';desc=`도가 ${rq}번 진동할 때 ${k.name}은 ${rp}번 진동해요. 규칙적으로 만나서 잘 어울려요!`}
+  else if(sum<=20){starsTxt='\u2B50\u2B50\u2B50\u2606\u2606';desc=`도가 ${rq}번 진동해야 ${k.name}이 ${rp}번 진동해요. 만남 간격이 넓어 어울림이 약해요.`}
+  else{starsTxt='\u2B50\u2606\u2606\u2606\u2606';desc=`도가 ${rq}번이나 진동해야 ${k.name}이 ${rp}번 진동해요. 거의 안 만나서 규칙이 잘 안 보여요.`}
+  explEl.innerHTML=`<div style="font-size:1rem;margin-bottom:6px">${starsTxt} <strong>어울림 분석</strong></div>
+    <div>${desc}</div>
+    <div style="margin-top:8px;font-size:.78rem;color:var(--text-sub)">
+      <span style="color:#00B894">●</span> 초록 점 = 두 파형이 동시에 중심선을 지나는 <strong>만남점</strong>
+    </div>`;
+}
+
+// ━━━━━━ 3. SCALE MODEL (미션 기반) ━━━━━━
+let modelScale=0; // 0 = 아직 선택 안 함
+let curMission=-1;
+const missions=[
+  {
+    icon:'&#x1F3EB;',title:'학교 축제 전시',
+    story:'학교 축제에서 <strong>우리 교실의 축소 모형</strong>을 전시하게 되었어요! 그런데 전시대 크기가 정해져 있어서, 모형이 전시대 안에 들어가야 해요.',
+    realW:800,realH:600,
+    limitW:50,limitH:40,limitLabel:'전시대',
+    constraint:'전시대 크기: <strong>가로 50cm × 세로 40cm</strong><br>교실 실제 크기: <strong>가로 800cm × 세로 600cm</strong><br>&#x2192; 모형의 가로와 세로가 <strong>모두</strong> 전시대 안에 들어가야 해요!',
+    answer:20, // 1:20 → 40×30 OK
+    acceptRange:[20,50,100], // acceptable scales
+    wrongHints:{5:'1:5이면 모형이 160×120cm... 전시대보다 훨씬 커요!',10:'1:10이면 80×60cm... 전시대(50×40)보다 아직 커요!',20:'',50:'1:50이면 16×12cm로 들어가긴 하지만, 너무 작지 않나요? 더 큰 비율도 있어요!',100:'1:100이면 8×6cm... 들어가긴 하지만 너무 작아요!'}
+  },
+  {
+    icon:'&#x1F697;',title:'자동차 미니어처',
+    story:'미술 시간에 <strong>자동차 미니어처 모형</strong>을 만들어 진열장에 전시해야 해요! 진열장 한 칸의 크기가 정해져 있어요.',
+    realW:450,realH:180,
+    limitW:25,limitH:15,limitLabel:'진열장 한 칸',
+    constraint:'진열장 한 칸: <strong>가로 25cm × 세로 15cm</strong><br>실제 자동차 크기: <strong>가로 450cm × 세로 180cm</strong><br>&#x2192; 모형이 진열장 한 칸에 들어가야 해요!',
+    answer:20,
+    acceptRange:[20,50,100],
+    wrongHints:{5:'1:5이면 모형이 90×36cm... 진열장보다 훨씬 커요!',10:'1:10이면 45×18cm... 진열장(25×15)보다 커요!',20:'',50:'1:50이면 9×3.6cm... 들어가긴 하지만 아주 작아요!',100:'1:100이면 4.5×1.8cm... 너무 작아서 세부 표현이 어려워요!'}
+  },
+  {
+    icon:'&#x1F3D7;',title:'건축가 체험',
+    story:'건축가가 되어 <strong>학교 운동장 설계도</strong>를 도화지에 그려야 해요! 도화지 크기에 맞춰 축소해야 합니다.',
+    realW:5000,realH:3000,
+    limitW:50,limitH:30,limitLabel:'도화지(4절지)',
+    constraint:'도화지 크기: <strong>가로 50cm × 세로 30cm</strong><br>운동장 실제 크기: <strong>가로 5000cm × 세로 3000cm</strong><br>&#x2192; 설계도가 도화지 안에 들어가야 해요!',
+    answer:100,
+    acceptRange:[100],
+    wrongHints:{5:'1:5이면 1000×600cm... 벽 크기네요!',10:'1:10이면 500×300cm... 아직 엄청 커요!',20:'1:20이면 250×150cm... 아직도 도화지보다 훨씬 커요!',50:'1:50이면 100×60cm... 도화지(50×30)보다 커요!',100:''}
+  }
+];
+
+function pickMission(idx){
+  curMission=idx;modelScale=0;
+  document.querySelectorAll('.mission-card').forEach((c,i)=>c.classList.toggle('active',i===idx));
+  document.querySelectorAll('#lab-model .scale-chip').forEach(c=>c.classList.remove('active'));
+  const m=missions[idx];
+  $('realW').value=m.realW;$('realH').value=m.realH;
+  $('realW').disabled=true;$('realH').disabled=true;
+  $('msEmoji').innerHTML=m.icon;
+  $('msText').innerHTML=m.story;
+  $('missionConstraint').style.display='block';
+  $('msConstraint').innerHTML=m.constraint;
+  $('modelJudge').style.display='none';
+  $('modelResult').innerHTML='<div class="result-title">&#x1F4D0; 축소 비율을 선택하세요</div><div style="font-size:.85rem;color:var(--text-sub)">위에서 1:5 ~ 1:100 중 알맞은 비율을 골라 보세요!</div>';
+  $('compareVis').innerHTML='';
+  $('compareLabel').textContent='축소 비율을 선택하면 비교가 나타나요';
+}
+
+function setScale(s){
+  modelScale=s;
+  document.querySelectorAll('#lab-model .scale-chip').forEach(c=>c.classList.toggle('active',parseInt(c.textContent.split(':')[1])===s));
+  calcModel();
+}
+
+function calcModel(){
+  if(!modelScale){return}
+  const W=parseInt($('realW').value)||100,H=parseInt($('realH').value)||100;
+  const mW=(W/modelScale).toFixed(1),mH=(H/modelScale).toFixed(1);
+  let limitInfo='';
+  if(curMission>=0){
+    const m=missions[curMission];
+    const fitsW=parseFloat(mW)<=m.limitW,fitsH=parseFloat(mH)<=m.limitH;
+    const fits=fitsW&&fitsH;
+    limitInfo=`<div class="result-row"><span class="result-label">${m.limitLabel} 가로</span><span class="result-val">${m.limitW} cm</span></div>
+      <div class="result-row"><span class="result-label">${m.limitLabel} 세로</span><span class="result-val">${m.limitH} cm</span></div>
+      <div class="result-row"><span class="result-label">들어가나요?</span><span class="result-val" style="color:${fits?'var(--teal)':'var(--red)'}">${fits?'&#x2705; 들어가요!':'&#x274C; 안 들어가요!'}</span></div>`;
+  }
+  $('modelResult').innerHTML=`<div class="result-title">&#x1F4D0; 모형 크기 (1:${modelScale})</div>
+    <div class="result-row"><span class="result-label">실제 가로</span><span class="result-val">${W} cm</span></div>
+    <div class="result-row"><span class="result-label">실제 세로</span><span class="result-val">${H} cm</span></div>
+    <div class="result-row"><span class="result-label">모형 가로</span><span class="result-val" style="color:var(--blue)">${mW} cm</span></div>
+    <div class="result-row"><span class="result-label">모형 세로</span><span class="result-val" style="color:var(--blue)">${mH} cm</span></div>
+    <div class="result-row"><span class="result-label">축소 비율</span><span class="result-val">1 : ${modelScale}</span></div>
+    ${limitInfo}`;
+  // Visual comparison
+  const maxPx=160,scale1=maxPx/Math.max(W,H);
+  const rW=W*scale1,rH=H*scale1;
+  const mPxW=rW/3,mPxH=rH/3;
+  // Show limit box if mission
+  let limitBox='';
+  if(curMission>=0){
+    const m=missions[curMission];
+    const lPxW=m.limitW*scale1,lPxH=m.limitH*scale1;
+    limitBox=`<div class="compare-item"><div class="box" style="width:${lPxW}px;height:${lPxH}px;background:#FFF3CD;border-color:#FFE082;border-style:dashed;font-size:${Math.min(lPxW,lPxH)*.15}px">${m.limitW}×${m.limitH}</div><div class="label">${m.limitLabel}</div></div>`;
+  }
+  $('compareVis').innerHTML=`
+    <div class="compare-item"><div class="box" style="width:${rW}px;height:${rH}px;background:var(--navy-light);font-size:${Math.min(rW,rH)*.12}px">${W}×${H}</div><div class="label">실물</div></div>
+    <div style="font-size:1.2rem;color:var(--text-sub);align-self:center">&#x27A1;</div>
+    <div class="compare-item"><div class="box" style="width:${mPxW}px;height:${mPxH}px;background:var(--blue-light);border-color:var(--blue);font-size:${Math.min(mPxW,mPxH)*.18}px">${mW}×${mH}</div><div class="label">모형 (1:${modelScale})</div></div>
+    ${limitBox?'<div style="font-size:1.2rem;color:var(--text-sub);align-self:center">&#x2194;</div>'+limitBox:''}`;
+  $('compareLabel').textContent='실제 크기와 모형 크기 비교';
+}
+
+function checkModelAnswer(){
+  if(curMission<0){$('modelJudge').style.display='block';$('modelJudge').innerHTML='<div class="model-judge close">먼저 위에서 미션을 선택하세요!</div>';return}
+  if(!modelScale){$('modelJudge').style.display='block';$('modelJudge').innerHTML='<div class="model-judge close">축소 비율을 먼저 선택하세요!</div>';return}
+  const m=missions[curMission];
+  const W=m.realW,H=m.realH;
+  const mW=W/modelScale,mH=H/modelScale;
+  const fits=mW<=m.limitW&&mH<=m.limitH;
+  const isOptimal=modelScale===m.answer;
+  const judge=$('modelJudge');judge.style.display='block';
+  if(isOptimal){
+    judge.innerHTML=`<div class="model-judge correct">&#x1F389; 정답! 1:${modelScale}이면 모형이 ${mW.toFixed(1)}×${mH.toFixed(1)}cm로 ${m.limitLabel}(${m.limitW}×${m.limitH}cm)에 딱 맞아요!<br>가장 크게 만들면서도 안에 들어가는 최적의 비율이에요!</div>`;
+    boom('정답!','var(--teal)');
+  } else if(fits){
+    judge.innerHTML=`<div class="model-judge close">&#x1F914; 들어가긴 하지만... 더 크게 만들 수 있는 비율이 있어요!<br>가능한 한 크게 만들어야 디테일이 잘 보여요. 다시 생각해 보세요!</div>`;
+  } else {
+    const hint=m.wrongHints[modelScale]||'이 비율로는 안 들어가요!';
+    judge.innerHTML=`<div class="model-judge wrong">&#x274C; ${hint}<br>모형이 ${mW.toFixed(1)}×${mH.toFixed(1)}cm인데, ${m.limitLabel}은 ${m.limitW}×${m.limitH}cm밖에 안 돼요!</div>`;
+  }
+}
+function applyPreset(){if(curMission>=0)pickMission(curMission);else pickMission(0)}
+
+// ━━━━━━ 4. RECIPE GAME (화채 만들기) ━━━━━━
+// 기본 레시피: 1명분
+const baseIngr=[
+  {icon:'&#x1F349;',name:'수박',amt:2,unit:'조각',color:'#E74C3C'},
+  {icon:'&#x1F353;',name:'딸기',amt:3,unit:'개',color:'#C0392B'},
+  {icon:'&#x1F34C;',name:'바나나',amt:1,unit:'개',color:'#F1C40F'},
+  {icon:'&#x1F95B;',name:'우유',amt:1,unit:'컵',color:'#ECF0F1'},
+  {icon:'&#x1F9CA;',name:'사이다',amt:2,unit:'컵',color:'#AED6F1'},
+];
+const rcMissions=[
+  {target:2, label:'친구 1명이 왔어요! 2명분을 만들어 보세요!', hint:'1명분 → 2명분, 모든 재료를 2배로! (×2)'},
+  {target:3, label:'친구가 2명 더! 3명분을 만들어 보세요!', hint:'1명분 → 3명분, 재료를 3배로! (×3)'},
+  {target:4, label:'4명이서 먹을 화채! 4명분을 만들어 보세요!', hint:'1명분 → 4명분, 4배! (×4)'},
+  {target:5, label:'5명 파티! 5명분 화채를 만들어 보세요!', hint:'1명분 → 5명분, 5배! (×5)'},
+  {target:6, label:'6명이 모였어요! 6명분을 만들어 보세요!', hint:'1명분 → 6명분, 6배! (×6)'},
+  {target:8, label:'대가족 모임! 8명분 화채를 만들어 보세요!', hint:'1명분 → 8명분, 8배! (×8)'},
+  {target:10, label:'반 친구들과! 10명분 화채를 만들어 보세요!', hint:'1명분 → 10명분, 10배! (×10)'},
+];
+const rc={mi:0, counts:[], hist:[], cleared:[]};
+
+function startRecipeMission(idx){
+  rc.mi=idx;rc.counts=baseIngr.map(()=>0);rc.hist=[];
+  $('rcFB').innerHTML='';$('rcNextBtn').style.display='none';
+  renderRecipeUI();
+}
+function renderRecipeUI(){
+  const m=rcMissions[rc.mi]||rcMissions[0];
+  // base recipe reference (1명분)
+  let refH='';
+  baseIngr.forEach(ig=>{
+    refH+=`<div style="display:flex;align-items:center;gap:4px;background:#fff;padding:4px 10px;border-radius:8px;font-size:.82rem;font-weight:700;box-shadow:0 1px 3px rgba(0,0,0,.05)"><span>${ig.icon}</span><span>${ig.name}</span><span style="color:var(--orange)">${ig.amt}${ig.unit}</span></div>`;
+  });
+  $('baseRecipeRef').innerHTML=refH;
+  // mission
+  $('rcMission').textContent=m.label;
+  $('rcMissionHint').textContent=m.hint;
+  // ingredient buttons — 현재 몇 개 넣었는지 숫자로 표시
+  let btnH='';
+  baseIngr.forEach((ig,i)=>{
+    btnH+=`<div class="ig-row"><span class="ig-icon">${ig.icon}</span><span class="ig-name">${ig.name}</span><button class="ig-btn" onclick="addIngr(${i},-1)">−</button><span class="ig-count" id="igC${i}">${rc.counts[i]}</span><span class="ig-unit">${ig.unit}</span><button class="ig-btn" onclick="addIngr(${i},1)">+</button></div>`;
+  });
+  $('ingrBtnArea').innerHTML=btnH;
+  updBowl();
+}
+function addIngr(idx,d){
+  if(idx<0||idx>=baseIngr.length)return;
+  const nv=(rc.counts[idx]||0)+d;
+  if(nv<0||nv>60)return;
+  rc.counts[idx]=nv;
+  rc.hist.push({idx,d});
+  const el=$('igC'+idx);
+  if(el)el.textContent=nv;
+  // drop animation in bowl
+  if(d>0){
+    const it=document.createElement('span');it.className='bowl-item';it.innerHTML=baseIngr[idx].icon;
+    $('bowlItems').appendChild(it);
+  }
+  updBowl();
+}
+function undoIngr(){
+  if(!rc.hist.length)return;
+  const last=rc.hist.pop();
+  rc.counts[last.idx]=(rc.counts[last.idx]||0)-last.d;
+  if(rc.counts[last.idx]<0)rc.counts[last.idx]=0;
+  const el=$('igC'+last.idx);
+  if(el)el.textContent=rc.counts[last.idx];
+  updBowl();rebuildBowlItems();
+}
+function resetBowl(){
+  rc.counts=baseIngr.map(()=>0);rc.hist=[];
+  baseIngr.forEach((_,i)=>{const el=$('igC'+i);if(el)el.textContent=0});
+  $('rcFB').innerHTML='';$('rcNextBtn').style.display='none';
+  updBowl();rebuildBowlItems();
+}
+function rebuildBowlItems(){
+  let h='';
+  baseIngr.forEach((ig,i)=>{
+    for(let j=0;j<(rc.counts[i]||0);j++) h+=`<span class="bowl-item">${ig.icon}</span>`;
+  });
+  $('bowlItems').innerHTML=h;
+}
+function updBowl(){
+  const total=rc.counts.reduce((s,v)=>s+(v||0),0);
+  const m=rcMissions[rc.mi]||rcMissions[0];
+  const ratio=m.target; // 1명분 기준이므로 target이 곧 배수
+  const maxTotal=baseIngr.reduce((s,ig)=>s+ig.amt,0)*ratio;
+  const pct=Math.min(total/(maxTotal||1)*100,100);
+  $('bowlWater').style.height=pct+'%';
+  // summary
+  let sum=rc.counts.map((c,i)=>(c||0)>0?`${baseIngr[i].icon}${c}${baseIngr[i].unit}`:'').filter(Boolean).join('  ');
+  $('bowlSummary').textContent=sum||'재료를 넣어 보세요!';
+  // bars
+  let barH='';
+  const maxBar=Math.max(...baseIngr.map(ig=>ig.amt*ratio), ...rc.counts.map(c=>c||0));
+  baseIngr.forEach((ig,i)=>{
+    const target=ig.amt*ratio;
+    const cur=rc.counts[i]||0;
+    const curPct=maxBar>0?(cur/maxBar*100):0;
+    const tgtPct=maxBar>0?(target/maxBar*100):0;
+    const isOver=cur>target;const isExact=cur===target;
+    const barColor=isExact?'var(--teal)':isOver?'var(--red)':'var(--orange)';
+    barH+=`<div class="ig-bar-row"><div class="ig-bar-label">${ig.icon} ${ig.name}</div><div class="ig-bar-track"><div class="ig-bar-fill" style="width:${curPct}%;background:${barColor}"></div><div class="ig-bar-target" style="left:${tgtPct}%"></div></div><div class="ig-bar-val">${cur} / ${target}</div></div>`;
+  });
+  $('bowlBars').innerHTML=barH;
+  updateRcScore();
+}
+function updateRcScore(){
+  let h='';
+  rcMissions.forEach((_,i)=>{
+    const earned=rc.cleared.includes(i);
+    h+=`<span class="rc-score-star ${earned?'earned':''}" style="color:${earned?'#FFD700':'#DDD'};font-size:1.3rem">${earned?'&#x2B50;':'&#x2606;'}</span>`;
+  });
+  $('rcScore').innerHTML=h;
+}
+function checkRecipe(){
+  const m=rcMissions[rc.mi]||rcMissions[0];
+  const ratio=m.target; // 1명분 기준
+  let allCorrect=true;
+  let details=[];
+  baseIngr.forEach((ig,i)=>{
+    const target=ig.amt*ratio;
+    const cur=rc.counts[i]||0;
+    const ok=cur===target;
+    if(!ok)allCorrect=false;
+    details.push({name:ig.name,icon:ig.icon,cur,target,ok});
+  });
+  if(allCorrect){
+    if(!rc.cleared.includes(rc.mi))rc.cleared.push(rc.mi);
+    fb('rcFB','success',`&#x1F389; 완벽해요! 1명분 × ${ratio} = ${m.target}명분, 비율이 정확합니다!`);
+    boom('&#x1F389; 완성!','var(--orange)');
+    $('rcNextBtn').style.display=(rc.mi<rcMissions.length-1)?'inline-block':'none';
+    updateRcScore();
+  } else {
+    let wrongList=details.filter(d=>!d.ok).map(d=>{
+      const diff=d.cur-d.target;
+      const dir=diff>0?`${diff}개 많아요`:`${d.target-d.cur}개 부족해요`;
+      return `${d.icon}${d.name}: 넣은 양 ${d.cur} → 정답 ${d.target} (${dir})`;
+    }).join('<br>');
+    fb('rcFB','hint',`&#x1F914; 아직 비율이 안 맞아요!<br><span style="font-size:.78rem;font-weight:600">${wrongList}</span>`);
+  }
+}
+function nextRecipeMission(){
+  if(rc.mi<rcMissions.length-1){
+    startRecipeMission(rc.mi+1);
+  }
+}
+
+// ━━━━━━ 5. MAP SCALE ━━━━━━
+let mapScaleVal=50;
+const mapPoints=[];
+const landmarks=[
+  {x:120,y:100,name:'학교',icon:'&#x1F3EB;'},
+  {x:400,y:80,name:'도서관',icon:'&#x1F4DA;'},
+  {x:500,y:300,name:'공원',icon:'&#x1F333;'},
+  {x:150,y:350,name:'마트',icon:'&#x1F6D2;'},
+  {x:320,y:220,name:'우체국',icon:'&#x1F4EE;'},
+];
+
+function setMapScale(v){mapScaleVal=v;
+  document.querySelectorAll('#lab-map .scale-chip').forEach(c=>c.classList.toggle('active',c.textContent.includes(v+'')));
+  $('scaleBarText').textContent=`1cm = ${v}m`;
+  drawMap();calcMapDist()}
+function drawMap(){
+  const cv=$('mapCanvas'),ctx=cv.getContext('2d');
+  ctx.clearRect(0,0,cv.width,cv.height);
+  ctx.fillStyle='#F0E6D3';ctx.fillRect(0,0,cv.width,cv.height);
+  ctx.strokeStyle='rgba(0,0,0,.06)';ctx.lineWidth=1;
+  for(let x=0;x<cv.width;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,cv.height);ctx.stroke()}
+  for(let y=0;y<cv.height;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(cv.width,y);ctx.stroke()}
+  ctx.strokeStyle='#D5C4A1';ctx.lineWidth=12;ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(60,200);ctx.lineTo(580,200);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(300,40);ctx.lineTo(300,440);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(100,100);ctx.lineTo(500,350);ctx.stroke();
+  ctx.font='20px sans-serif';ctx.textAlign='center';
+  landmarks.forEach(lm=>{
+    ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(lm.x,lm.y,18,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='#95A5A6';ctx.lineWidth=2;ctx.stroke();
+    ctx.fillStyle='#2C3E50';ctx.font='bold 11px sans-serif';ctx.fillText(lm.name,lm.x,lm.y+4);
+  });
+  mapPoints.forEach((p,i)=>{
+    ctx.beginPath();ctx.arc(p.x,p.y,8,0,Math.PI*2);ctx.fillStyle=i===0?'var(--red)':'var(--blue)';ctx.fill();
+    ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();
+    ctx.fillStyle='#fff';ctx.font='bold 10px sans-serif';ctx.fillText(i===0?'A':'B',p.x,p.y+3.5);
+  });
+  if(mapPoints.length===2){
+    ctx.setLineDash([6,4]);ctx.strokeStyle='var(--coral)';ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(mapPoints[0].x,mapPoints[0].y);ctx.lineTo(mapPoints[1].x,mapPoints[1].y);ctx.stroke();
+    ctx.setLineDash([]);
+  }
+}
+function calcMapDist(){
+  const pl=$('pointList');let h='';
+  mapPoints.forEach((p,i)=>{
+    const near=landmarks.reduce((best,lm)=>{const d=Math.hypot(lm.x-p.x,lm.y-p.y);return d<best.d?{d,name:lm.name}:best},{d:999,name:'지점'});
+    const label=near.d<30?near.name+'근처':`(${p.x}, ${p.y})`;
+    h+=`<div class="point-item"><div class="point-dot" style="background:${i===0?'var(--red)':'var(--blue)'}"></div><strong>${i===0?'A':'B'}</strong> ${label}</div>`;
+  });
+  pl.innerHTML=h;
+  if(mapPoints.length===2){
+    const dx=mapPoints[1].x-mapPoints[0].x,dy=mapPoints[1].y-mapPoints[0].y;
+    const pxDist=Math.sqrt(dx*dx+dy*dy);
+    const cmDist=pxDist/38;
+    const realM=cmDist*mapScaleVal;
+    $('mapResult').innerHTML=`<h4>&#x1F4CF; 측정 결과</h4>
+      <div class="map-dist">${realM.toFixed(0)} m</div>
+      <div class="map-dist-sub">지도 위 거리: 약 ${cmDist.toFixed(1)} cm</div>
+      <div class="map-dist-sub">축척: 1cm = ${mapScaleVal}m → ${cmDist.toFixed(1)} × ${mapScaleVal} = <strong>${realM.toFixed(0)} m</strong></div>`;
+  } else {
+    $('mapResult').innerHTML='<h4>&#x1F4CF; 측정 결과</h4><div style="font-size:.85rem;color:var(--text-sub)">두 지점을 클릭하면 거리가 계산됩니다.</div>';
+  }
+}
+$('mapCanvas').addEventListener('click',function(e){
+  const rect=this.getBoundingClientRect();
+  const x=Math.round((e.clientX-rect.left)*(640/rect.width));
+  const y=Math.round((e.clientY-rect.top)*(480/rect.height));
+  if(mapPoints.length>=2)mapPoints.length=0;
+  mapPoints.push({x,y});
+  drawMap();calcMapDist();
+  $('mapHint').textContent=mapPoints.length===1?'두 번째 지점을 클릭하세요!':'다시 클릭하면 새로 측정합니다.';
+});
+function clearMap(){mapPoints.length=0;drawMap();calcMapDist();$('mapHint').textContent='지도 위를 클릭해서 두 지점을 찍어 보세요!'}
+
+// ━━━━━━ INIT ━━━━━━
+bldWv();updSnd();updColor();pickMission(0);startRecipeMission(0);drawMap();buildPiano();updatePianoInfo();
+</script>
+</body>
+</html>

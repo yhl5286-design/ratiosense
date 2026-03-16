@@ -294,6 +294,8 @@ main{max-width:1400px;margin:0 auto;padding:0 40px 60px}
 .ig-row .ig-icon{font-size:1.3rem;width:28px;text-align:center}
 .ig-row .ig-name{font-weight:700;font-size:.85rem;min-width:50px}
 .ig-row .ig-count{font-size:1.1rem;font-weight:900;color:var(--orange);min-width:36px;text-align:center}
+.ig-input{width:52px;height:36px;border:2px solid #E0E0E0;border-radius:8px;text-align:center;font-size:1rem;font-weight:800;color:var(--orange);font-family:var(--font);outline:none;transition:border-color .2s}
+.ig-input:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(230,126,34,.15)}
 .ig-row .ig-unit{font-size:.72rem;color:var(--text-sub)}
 .ig-btn{width:36px;height:36px;border-radius:50%;border:2px solid #E0E0E0;background:#fff;font-size:1.1rem;font-weight:700;cursor:pointer;font-family:var(--font);transition:all .15s;display:flex;align-items:center;justify-content:center;color:var(--text)}
 .ig-btn:hover{border-color:var(--orange);color:var(--orange);transform:scale(1.1)}
@@ -712,11 +714,10 @@ main{max-width:1400px;margin:0 auto;padding:0 40px 60px}
           <div style="font-size:1.3rem;font-weight:900;margin:6px 0" id="rcMission">6명분 화채를 만들어 보세요!</div>
           <div style="font-size:.78rem;color:var(--text-sub)" id="rcMissionHint">3명 → 6명이면 재료를 얼마나 넣어야 할까요?</div>
         </div>
-        <!-- 재료 넣기 버튼 -->
+        <!-- 재료 입력 -->
         <div style="display:flex;flex-direction:column;gap:8px" id="ingrBtnArea"></div>
         <div style="display:flex;gap:8px;margin-top:14px;justify-content:center">
-          <button class="act-btn" onclick="undoIngr()">&#x21A9; 되돌리기</button>
-          <button class="act-btn" onclick="resetBowl()">&#x1F5D1; 그릇 비우기</button>
+          <button class="act-btn" onclick="resetBowl()">&#x1F5D1; 초기화</button>
         </div>
       </div>
       <div class="recipe-panel" style="display:flex;flex-direction:column;align-items:center">
@@ -1612,41 +1613,24 @@ function renderRecipeUI(){
   // mission
   $('rcMission').textContent=m.label;
   $('rcMissionHint').textContent=m.hint;
-  // ingredient buttons — 현재 몇 개 넣었는지 숫자로 표시
+  // ingredient input fields — 숫자를 직접 키보드로 입력
   let btnH='';
   baseIngr.forEach((ig,i)=>{
-    btnH+=`<div class="ig-row"><span class="ig-icon">${ig.icon}</span><span class="ig-name">${ig.name}</span><button class="ig-btn" onclick="addIngr(${i},-1)">−</button><span class="ig-count" id="igC${i}">${rc.counts[i]}</span><span class="ig-unit">${ig.unit}</span><button class="ig-btn" onclick="addIngr(${i},1)">+</button></div>`;
+    btnH+=`<div class="ig-row"><span class="ig-icon">${ig.icon}</span><span class="ig-name">${ig.name}</span><input class="ig-input" id="igC${i}" type="number" min="0" max="999" value="${rc.counts[i]}" onchange="setIngr(${i},this.value)" oninput="setIngr(${i},this.value)"><span class="ig-unit">${ig.unit}</span></div>`;
   });
   $('ingrBtnArea').innerHTML=btnH;
   updBowl();
 }
-function addIngr(idx,d){
+function setIngr(idx,val){
   if(idx<0||idx>=baseIngr.length)return;
-  const nv=(rc.counts[idx]||0)+d;
-  if(nv<0||nv>60)return;
+  const nv=parseInt(val)||0;
+  if(nv<0)return;
   rc.counts[idx]=nv;
-  rc.hist.push({idx,d});
-  const el=$('igC'+idx);
-  if(el)el.textContent=nv;
-  // drop animation in bowl
-  if(d>0){
-    const it=document.createElement('span');it.className='bowl-item';it.innerHTML=baseIngr[idx].icon;
-    $('bowlItems').appendChild(it);
-  }
-  updBowl();
-}
-function undoIngr(){
-  if(!rc.hist.length)return;
-  const last=rc.hist.pop();
-  rc.counts[last.idx]=(rc.counts[last.idx]||0)-last.d;
-  if(rc.counts[last.idx]<0)rc.counts[last.idx]=0;
-  const el=$('igC'+last.idx);
-  if(el)el.textContent=rc.counts[last.idx];
   updBowl();rebuildBowlItems();
 }
 function resetBowl(){
-  rc.counts=baseIngr.map(()=>0);rc.hist=[];
-  baseIngr.forEach((_,i)=>{const el=$('igC'+i);if(el)el.textContent=0});
+  rc.counts=baseIngr.map(()=>0);
+  baseIngr.forEach((_,i)=>{const el=$('igC'+i);if(el)el.value=0});
   $('rcFB').innerHTML='';$('rcNextBtn').style.display='none';
   updBowl();rebuildBowlItems();
 }

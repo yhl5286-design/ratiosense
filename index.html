@@ -433,6 +433,21 @@ main{max-width:1400px;margin:0 auto;padding:0 40px 60px}
 .reflection-banner .refl-close:hover{background:rgba(0,0,0,.2)}
 .reflection-banner .refl-timer{position:absolute;bottom:0;left:0;height:3px;background:#FFB300;border-radius:0 0 var(--radius-sm) var(--radius-sm);animation:reflTimer 8s linear forwards}
 @keyframes reflTimer{from{width:100%}to{width:0%}}
+
+/* ══════════════════════
+   Scaffolding transitions
+   ══════════════════════ */
+.scaff-hidden{opacity:0;transition:opacity 0.5s;pointer-events:none;height:0;overflow:hidden}
+.scaff-reveal{opacity:1;animation:scaffReveal 0.8s ease}
+@keyframes scaffReveal{from{opacity:0;transform:scale(1.3)}to{opacity:1;transform:scale(1)}}
+.scaff-msg{margin:8px auto;padding:10px 16px;border-radius:var(--radius-sm);font-size:.82rem;font-weight:700;text-align:center;background:linear-gradient(135deg,#E8F8F5,#D5F5ED);color:var(--teal);border:2px solid var(--teal);animation:fadeUp .4s;width:100%}
+.scaff-msg-purple{background:var(--purple-light);color:var(--purple);border:1.5px solid var(--purple)}
+.scaff-msg-blue{background:var(--blue-light);color:var(--blue);border:1.5px solid var(--blue)}
+.scaff-msg-navy{background:var(--navy-light);color:var(--navy);border:1.5px solid var(--navy)}
+.scaff-fade-in{animation:scaffReveal .6s ease}
+.scaff-reveal-all-btn{padding:4px 12px;border-radius:100px;border:2px dashed #D0D0D0;background:transparent;font-family:var(--font);font-size:.68rem;font-weight:600;color:var(--text-sub);cursor:pointer;transition:all .2s;margin-left:8px}
+.scaff-reveal-all-btn:hover{border-color:var(--coral);color:var(--coral);background:#FFF5F5}
+.dropper-count.scaff-q{font-size:1.4rem;color:var(--text-sub) !important}
 </style>
 </head>
 <body>
@@ -497,11 +512,12 @@ main{max-width:1400px;margin:0 auto;padding:0 40px 60px}
         <button class="act-btn" onclick="clearBeaker()">&#x1F5D1; 비커 비우기</button>
       </div>
       <button class="save-btn" onclick="saveRecipe()">&#x1F4BE; 이 색 레시피 저장</button>
+      <div id="colScaffMsg"></div>
       <div id="cFB"></div>
     </div>
     <div>
       <div class="stitle"><span class="badge" style="background:#F0F0F0;color:var(--text-sub)">기록</span> 방울 기록</div>
-      <div class="record-table-wrap"><table class="rtbl"><thead><tr><th>#</th><th style="color:var(--red)">빨</th><th style="color:#C29200">노</th><th style="color:var(--blue)">파</th><th>합계</th><th>색상</th></tr></thead><tbody id="cLog"></tbody></table></div>
+      <div class="record-table-wrap" id="colRecordWrap"><table class="rtbl"><thead><tr><th>#</th><th style="color:var(--red)">빨</th><th style="color:#C29200">노</th><th style="color:var(--blue)">파</th><th>합계</th><th>색상</th></tr></thead><tbody id="cLog"></tbody></table></div>
       <div style="margin-top:20px">
         <div class="stitle"><span class="badge" style="background:var(--teal-light);color:var(--teal)">비교</span> 저장된 레시피 <button class="act-btn" style="margin-left:auto;font-size:.68rem;padding:4px 10px" onclick="clearAllRecipes()">전체 삭제</button></div>
         <div class="recipe-grid" id="recipeGrid"><div class="recipe-empty">물감을 섞고 "레시피 저장"을 눌러 보세요!</div></div>
@@ -538,7 +554,7 @@ main{max-width:1400px;margin:0 auto;padding:0 40px 60px}
 
 <!-- ════════ 2. SOUND LAB ════════ -->
 <div class="lab" id="lab-sound">
-  <div class="stitle"><span class="badge" style="background:var(--purple-light);color:var(--purple)">소리</span> 블록을 쌓아 두 음의 어울림을 탐험해 보세요</div>
+  <div class="stitle"><span class="badge" style="background:var(--purple-light);color:var(--purple)">소리</span> 블록을 쌓아 두 음의 어울림을 탐험해 보세요<button class="scaff-reveal-all-btn" onclick="sndScaffRevealAll()" id="sndRevealAllBtn" title="교사용: 모든 정보 표시">모두 보기</button></div>
   <div class="sound-layout">
     <div>
       <div class="towers-area">
@@ -566,7 +582,7 @@ main{max-width:1400px;margin:0 auto;padding:0 40px 60px}
 
 <!-- ════════ 2.5 HARMONY ROOM (화음 감상실) ════════ -->
 <div class="lab" id="lab-harmony">
-  <div class="stitle"><span class="badge" style="background:var(--purple-light);color:var(--purple)">어울림 알기</span> 기본음 '도'와 다른 음을 비교해 보세요</div>
+  <div class="stitle"><span class="badge" style="background:var(--purple-light);color:var(--purple)">어울림 알기</span> 기본음 '도'와 다른 음을 비교해 보세요<button class="scaff-reveal-all-btn" onclick="harmScaffRevealAll()" id="harmRevealAllBtn" title="교사용: 모든 정보 표시">모두 보기</button></div>
   <div class="harmony-layout">
     <div>
       <div class="piano-wrap" id="pianoKeys"></div>
@@ -676,12 +692,13 @@ main{max-width:1400px;margin:0 auto;padding:0 40px 60px}
       <div class="input-group">
         <label>축소 비율 선택</label>
         <div class="scale-selector" id="scaleSelector">
-          <button class="scale-chip" onclick="setScale(5)">1:5</button>
-          <button class="scale-chip" onclick="setScale(10)">1:10</button>
-          <button class="scale-chip" onclick="setScale(20)">1:20</button>
-          <button class="scale-chip" onclick="setScale(50)">1:50</button>
-          <button class="scale-chip" onclick="setScale(100)">1:100</button>
+          <button class="scale-chip" data-scale="5" onclick="setScale(5)">1:5</button>
+          <button class="scale-chip" data-scale="10" onclick="setScale(10)">1:10</button>
+          <button class="scale-chip" data-scale="20" onclick="setScale(20)">1:20</button>
+          <button class="scale-chip" data-scale="50" onclick="setScale(50)">1:50</button>
+          <button class="scale-chip" data-scale="100" onclick="setScale(100)">1:100</button>
         </div>
+        <div id="modScaffMsg"></div>
       </div>
       <div class="result-box" id="modelResult"></div>
       <div id="modelJudge" style="display:none"></div>
@@ -810,12 +827,13 @@ main{max-width:1400px;margin:0 auto;padding:0 40px 60px}
 </div>
 <div class="teacher-panel" id="tPanel">
   <div class="teacher-inner">
-    <label>색상:</label><button class="act-btn" onclick="clearBeaker();clearColorLog();clearAllRecipes()">전체 리셋</button>
+    <label>색상:</label><button class="act-btn" onclick="clearBeaker();clearColorLog();clearAllRecipes();colScaff.phase=1;colScaff.totalDrops=0;colScaff.saveCount=0;colScaff.transitioned2=false;applyColScaffUI();updColor()">전체 리셋</button>
     <label>화음:</label><button class="act-btn" onclick="rstSndAll()">전체 리셋</button>
     <label>감상실:</label><button class="act-btn" onclick="resetPiano()">리셋</button>
-    <label>축소모형:</label><button class="act-btn" onclick="applyPreset()">리셋</button>
+    <label>축소모형:</label><button class="act-btn" onclick="modScaff.phase=1;modScaff.scalesTried.clear();modScaff.scalesTriedCount=0;updateScaleChipLabels();applyPreset()">리셋</button>
     <label>화채:</label><button class="act-btn" onclick="startRecipeMission(0);switchRecipeMode('make')">리셋</button>
     <label>나누기:</label><button class="act-btn" onclick="dv.cleared=[];switchRecipeMode('divide')">리셋</button>
+    <label style="margin-left:12px;border-left:2px solid #E0E0E0;padding-left:12px">스캐폴딩:</label><button class="act-btn" style="border-color:var(--coral);color:var(--coral)" onclick="scaffoldRevealAll()">모두 보기</button>
   </div>
 </div>
 
@@ -846,6 +864,77 @@ function switchTab(t){
   if(t==='harmony'){buildPiano();stopWaveAnim()}
 }
 
+// ━━━━━━ SCAFFOLDING STATE ━━━━━━
+const colScaff={phase:1,totalDrops:0,saveCount:0,transitioned2:false};
+const modScaff={phase:1,scalesTried:new Set(),scalesTriedCount:0};
+const scaleLabels={
+  5:{hidden:'아주 크게',revealed:'1:5'},
+  10:{hidden:'크게',revealed:'1:10'},
+  20:{hidden:'보통',revealed:'1:20'},
+  50:{hidden:'작게',revealed:'1:50'},
+  100:{hidden:'아주 작게',revealed:'1:100'}
+};
+
+function scaffoldRevealAll(){
+  // Color Lab: max phase
+  colScaff.phase=3;colScaff.transitioned2=true;
+  updColor();renderRecipes();updateRecipeMapVisibility();
+  applyColScaffUI();
+  // Scale Model: max phase
+  modScaff.phase=2;
+  updateScaleChipLabels();
+  applyModScaffUI();
+}
+
+function applyColScaffUI(){
+  const msg=$('colScaffMsg');
+  const recWrap=$('colRecordWrap');
+  if(colScaff.phase===1){
+    msg.innerHTML='<div class="scaff-msg">&#x1F3A8; 색이 어떻게 변하는지 관찰해 보세요!</div>';
+    if(recWrap)recWrap.classList.add('scaff-hidden');
+  } else if(colScaff.phase===2){
+    msg.innerHTML='<div class="scaff-msg scaff-fade-in">&#x1F50D; 방울 수를 세어 볼까요?</div>';
+    if(recWrap){recWrap.classList.remove('scaff-hidden');recWrap.classList.add('scaff-fade-in')}
+  } else {
+    msg.innerHTML='';
+    if(recWrap)recWrap.classList.remove('scaff-hidden');
+  }
+}
+
+function checkColScaffTransition(){
+  if(colScaff.phase===1&&colScaff.totalDrops>=6&&!colScaff.transitioned2){
+    colScaff.phase=2;colScaff.transitioned2=true;
+    applyColScaffUI();
+    boom('&#x1F50D; 발견!','var(--teal)');
+    // re-render counts with real numbers
+    updColor();
+  }
+  if(colScaff.phase===2&&colScaff.saveCount>=1){
+    colScaff.phase=3;
+    applyColScaffUI();
+    renderRecipes();
+  }
+}
+
+function applyModScaffUI(){
+  const msg=$('modScaffMsg');
+  if(modScaff.phase===1){
+    if(msg)msg.innerHTML='<div class="scaff-msg scaff-msg-navy">&#x1F50E; 크기가 어떻게 달라지는지 관찰해 보세요!</div>';
+  } else {
+    if(msg)msg.innerHTML='<div class="scaff-msg scaff-msg-navy scaff-fade-in">&#x1F522; 축소 비율을 숫자로 확인해 볼까요?</div>';
+    setTimeout(()=>{if(msg)msg.innerHTML=''},3000);
+  }
+}
+
+function updateScaleChipLabels(){
+  document.querySelectorAll('#scaleSelector .scale-chip').forEach(chip=>{
+    const s=parseInt(chip.dataset.scale);
+    if(s&&scaleLabels[s]){
+      chip.textContent=modScaff.phase===1?scaleLabels[s].hidden:scaleLabels[s].revealed;
+    }
+  });
+}
+
 // ━━━━━━ 1. COLOR LAB ━━━━━━
 const col={r:0,y:0,b:0,hist:[],recipes:[]};
 function ryb2rgb(r,y,b){
@@ -860,30 +949,46 @@ function ryb2rgb(r,y,b){
 function curRGB(){return ryb2rgb(col.r,col.y,col.b)}
 function rs(c){return`rgb(${c[0]},${c[1]},${c[2]})`}
 function addDrop(c){if(col[c]>=50)return;col[c]++;col.hist.push({c,d:1});
+  colScaff.totalDrops++;
   const d=document.createElement('div');d.className='drop-anim';d.style.background={r:'var(--red)',y:'var(--yellow)',b:'var(--blue)'}[c];d.style.left=c==='r'?'25%':c==='y'?'50%':'75%';d.style.top='0';$('beaker').appendChild(d);setTimeout(()=>d.remove(),600);
-  updColor()}
-function removeDrop(c){if(col[c]<=0)return;col[c]--;col.hist.push({c,d:-1});updColor()}
-function undoDrop(){if(!col.hist.length)return;const last=col.hist.pop();col[last.c]-=last.d;if(col[last.c]<0)col[last.c]=0;updColor()}
-function clearBeaker(){col.r=0;col.y=0;col.b=0;col.hist=[];updColor()}
+  updColor();checkColScaffTransition()}
+function removeDrop(c){if(col[c]<=0)return;col[c]--;col.hist.push({c,d:-1});colScaff.totalDrops=Math.max(0,colScaff.totalDrops-1);updColor()}
+function undoDrop(){if(!col.hist.length)return;const last=col.hist.pop();col[last.c]-=last.d;if(col[last.c]<0)col[last.c]=0;colScaff.totalDrops=col.r+col.y+col.b;updColor()}
+function clearBeaker(){col.r=0;col.y=0;col.b=0;col.hist=[];colScaff.totalDrops=0;updColor()}
 function clearColorLog(){$('cLog').innerHTML=''}
 function updColor(){
   const{r,y,b}=col,t=r+y+b;
-  $('cntR').textContent=r;$('cntY').textContent=y;$('cntB').textContent=b;
+  // Phase 1: show "?" instead of numbers
+  if(colScaff.phase===1){
+    $('cntR').textContent='?';$('cntY').textContent='?';$('cntB').textContent='?';
+    $('cntR').classList.add('scaff-q');$('cntY').classList.add('scaff-q');$('cntB').classList.add('scaff-q');
+  } else {
+    $('cntR').textContent=r;$('cntY').textContent=y;$('cntB').textContent=b;
+    $('cntR').classList.remove('scaff-q');$('cntY').classList.remove('scaff-q');$('cntB').classList.remove('scaff-q');
+  }
   $('dfR').style.height=((50-r)/50*100)+'%';$('dfY').style.height=((50-y)/50*100)+'%';$('dfB').style.height=((50-b)/50*100)+'%';
   $('bLiq').style.height=Math.min(t/75*100,100)+'%';
   $('bLiq').style.backgroundColor=t>0?rs(curRGB()):'transparent';
   $('bTotal').textContent=(t*10)+' mL';
-  let n=0,cr=0,cy=0,cb=0,rows='';
-  for(const h of col.hist){if(h.c==='r')cr+=h.d;else if(h.c==='y')cy+=h.d;else cb+=h.d;cr=Math.max(0,cr);cy=Math.max(0,cy);cb=Math.max(0,cb);n++;const rgb=ryb2rgb(cr,cy,cb);
-    const sign=h.d>0?'+':'';const colName={r:'빨',y:'노',b:'파'}[h.c];
-    rows+=`<tr class="${n===col.hist.length?'latest':''}"><td>${n}</td><td>${cr||'-'}</td><td>${cy||'-'}</td><td>${cb||'-'}</td><td>${(cr+cy+cb)*10}</td><td><span class="chip-sm" style="background:${rs(rgb)}"></span></td></tr>`}
-  $('cLog').innerHTML=rows;const w=$('cLog').parentElement.parentElement;w.scrollTop=w.scrollHeight;
+  // Phase 1: hide table rows
+  if(colScaff.phase>=2){
+    let n=0,cr=0,cy=0,cb=0,rows='';
+    for(const h of col.hist){if(h.c==='r')cr+=h.d;else if(h.c==='y')cy+=h.d;else cb+=h.d;cr=Math.max(0,cr);cy=Math.max(0,cy);cb=Math.max(0,cb);n++;const rgb=ryb2rgb(cr,cy,cb);
+      const sign=h.d>0?'+':'';const colName={r:'빨',y:'노',b:'파'}[h.c];
+      rows+=`<tr class="${n===col.hist.length?'latest':''}"><td>${n}</td><td>${cr||'-'}</td><td>${cy||'-'}</td><td>${cb||'-'}</td><td>${(cr+cy+cb)*10}</td><td><span class="chip-sm" style="background:${rs(rgb)}"></span></td></tr>`}
+    $('cLog').innerHTML=rows;const w=$('cLog').parentElement.parentElement;w.scrollTop=w.scrollHeight;
+  } else {
+    $('cLog').innerHTML='<tr><td colspan="6" style="color:var(--text-sub);font-style:italic;padding:16px">물감을 더 넣어 보세요...</td></tr>';
+  }
 }
 function normRatio(r,y,b){const v=[r,y,b].filter(x=>x>0);if(!v.length)return'0:0:0';const g=v.reduce((a,b)=>gcd(a,b));return`${r/g}:${y/g}:${b/g}`}
 function saveRecipe(){
   const{r,y,b}=col;if(r+y+b===0){fb('cFB','hint','물감을 먼저 넣어 주세요!');return}
   const ratio=normRatio(r,y,b);
-  col.recipes.push({id:Date.now(),r,y,b,rgb:curRGB(),ratio});renderRecipes();updateRecipeMapVisibility();
+  col.recipes.push({id:Date.now(),r,y,b,rgb:curRGB(),ratio});
+  colScaff.saveCount++;
+  checkColScaffTransition();
+  renderRecipes();updateRecipeMapVisibility();
   const m=col.recipes.filter(x=>x.ratio===ratio);
   if(m.length>=2&&new Set(m.map(x=>`${x.r}-${x.y}-${x.b}`)).size>=2){boom('같은 색!','var(--teal)');fb('cFB','success','같은 색을 다른 양으로 만들었어요!')}
   showReflection('color',{ratio,r,y,b});
@@ -896,13 +1001,16 @@ function renderRecipes(){
   const G={};col.recipes.forEach((r,i)=>{if(!G[r.ratio])G[r.ratio]=[];G[r.ratio].push({...r,idx:i+1})});
   let h='';
   for(const k of Object.keys(G)){const g=G[k],diff=g.length>=2&&new Set(g.map(x=>`${x.r}-${x.y}-${x.b}`)).size>=2;
-    if(diff){const p=k.split(':').map(Number),L=[];if(p[0])L.push(`<span style="color:var(--red)">빨${p[0]}</span>`);if(p[1])L.push(`<span style="color:#C29200">노${p[1]}</span>`);if(p[2])L.push(`<span style="color:var(--blue)">파${p[2]}</span>`);
+    if(diff&&colScaff.phase>=3){const p=k.split(':').map(Number),L=[];if(p[0])L.push(`<span style="color:var(--red)">빨${p[0]}</span>`);if(p[1])L.push(`<span style="color:#C29200">노${p[1]}</span>`);if(p[2])L.push(`<span style="color:var(--blue)">파${p[2]}</span>`);
       h+=`<div class="recipe-match-group"><div class="match-header">&#x2728; 같은 색! 기본 비율 = ${L.join(' : ')}</div><div class="match-cards">${g.map(rCard).join('')}</div></div>`}
     else g.forEach(r=>{h+=rCard(r)})}
   box.innerHTML=h;
 }
-function rCard(r){const d=[];if(r.r)d.push(`<span class="r">빨${r.r}</span>`);if(r.y)d.push(`<span class="y">노${r.y}</span>`);if(r.b)d.push(`<span class="b">파${r.b}</span>`);
-  return`<div class="recipe-card"><div class="recipe-color" style="background:${rs(r.rgb)}"><div class="recipe-color-label">#${r.idx}</div></div><div class="recipe-body"><div class="recipe-drops">${d.join(' + ')}</div><div class="recipe-total">합계 ${(r.r+r.y+r.b)*10}mL</div></div><button class="recipe-delete" onclick="delRecipe(${r.id})">&#x2715;</button></div>`}
+function rCard(r){
+  const showRatio=colScaff.phase>=3;
+  const d=[];if(r.r)d.push(`<span class="r">빨${r.r}</span>`);if(r.y)d.push(`<span class="y">노${r.y}</span>`);if(r.b)d.push(`<span class="b">파${r.b}</span>`);
+  const bodyContent=showRatio?`<div class="recipe-drops">${d.join(' + ')}</div><div class="recipe-total">합계 ${(r.r+r.y+r.b)*10}mL</div>`:`<div class="recipe-drops" style="font-style:italic;color:var(--text-sub)">색을 비교해 보세요!</div>`;
+  return`<div class="recipe-card"><div class="recipe-color" style="background:${rs(r.rgb)}"><div class="recipe-color-label">#${r.idx}</div></div><div class="recipe-body">${bodyContent}</div><button class="recipe-delete" onclick="delRecipe(${r.id})">&#x2715;</button></div>`}
 
 // ━━━━━━ RECIPE MAP (내 레시피 지도) ━━━━━━
 function toggleRecipeMap(){
@@ -912,7 +1020,7 @@ function toggleRecipeMap(){
 }
 function updateRecipeMapVisibility(){
   const panel=$('recipeMapPanel');
-  if(col.recipes.length>=2){panel.style.display='block';drawRecipeMap()}
+  if(col.recipes.length>=2&&colScaff.phase>=3){panel.style.display='block';drawRecipeMap()}
   else{panel.style.display='none'}
 }
 function drawRecipeMap(){
@@ -1025,18 +1133,33 @@ function dismissReflection(){
 
 // ━━━━━━ 2. SOUND LAB ━━━━━━
 const snd={a:2,b:3,playing:false,ctx:null,oscs:[],gain:null,recs:[],goal:3,found:0};
+const sndScaff={phase:1,playCount:0,revealThreshold:3,recCountInP2:0};
 function consonance(a,b){const[sa,sb]=simplify(a,b),p=sa*sb;
   if(p<=2)return{s:1,f:'\u{1F929}',l:'완벽한 어울림!'};if(p<=6)return{s:.85,f:'\u{1F60A}',l:'아주 잘 어울려요'};if(p<=12)return{s:.65,f:'\u{1F642}',l:'꽤 어울려요'};if(p<=20)return{s:.4,f:'\u{1F610}',l:'조금 어색해요'};if(p<=30)return{s:.2,f:'\u{1F615}',l:'잘 안 어울려요'};return{s:.08,f:'\u{1F616}',l:'많이 어긋나요'}}
 function chgT(w,d){snd[w]=Math.max(1,Math.min(10,snd[w]+d));updSnd();if(snd.playing)updFreqs()}
 function bldT(id,n){const s=$(id);s.innerHTML='';for(let i=0;i<n;i++){const b=document.createElement('div');b.className='tower-block'+(i===n-1?' pop-in':'');s.appendChild(b)}}
-function updSnd(){$('tcA').textContent=snd.a;$('tcB').textContent=snd.b;bldT('tsA',snd.a);bldT('tsB',snd.b);
-  if(snd.playing){const c=consonance(snd.a,snd.b);$('hFace').textContent=c.f;$('hLabel').textContent=c.l;$('hLabel').style.color=c.s>=.6?'var(--teal)':c.s>=.35?'#C29200':'var(--red)'}}
+function updSnd(){
+  if(sndScaff.phase===1){$('tcA').textContent='?';$('tcB').textContent='?'}
+  else{$('tcA').textContent=snd.a;$('tcB').textContent=snd.b}
+  bldT('tsA',snd.a);bldT('tsB',snd.b);
+  if(snd.playing){const c=consonance(snd.a,snd.b);$('hFace').textContent=c.f;
+    if(sndScaff.phase===1){$('hLabel').textContent='듣고 느껴보세요!';$('hLabel').style.color='var(--purple)'}
+    else{$('hLabel').textContent=c.l;$('hLabel').style.color=c.s>=.6?'var(--teal)':c.s>=.35?'#C29200':'var(--red)'}}}
+function sndScaffAdvance(toPhase){
+  if(sndScaff.phase>=toPhase)return;sndScaff.phase=toPhase;
+  if(toPhase===2){$('tcA').classList.add('scaff-reveal');$('tcB').classList.add('scaff-reveal');
+    const msg=document.createElement('div');msg.className='scaff-msg scaff-msg-purple';msg.textContent='\u{1F50D} 블록 수를 확인해 볼까요?';$('sFB').prepend(msg);setTimeout(()=>msg.remove(),2500)}
+  if(toPhase===3){const msg=document.createElement('div');msg.className='scaff-msg scaff-msg-purple';msg.textContent='\u{1F4DD} 숫자로 표현하면 이런 비율이에요!';$('sFB').prepend(msg);setTimeout(()=>msg.remove(),2500)}
+  updSnd();renSndRec()}
+function sndScaffRevealAll(){sndScaff.phase=3;sndScaff.playCount=sndScaff.revealThreshold;sndScaff.recCountInP2=2;updSnd();renSndRec();$('sndRevealAllBtn').style.display='none'}
 function initAud(){if(!snd.ctx)snd.ctx=new(window.AudioContext||window.webkitAudioContext)();if(snd.ctx.state==='suspended')snd.ctx.resume()}
 function startSnd(){initAud();stopSndNow();const ctx=snd.ctx,b=264,[sa,sb]=simplify(snd.a,snd.b);
   const g=ctx.createGain();g.gain.setValueAtTime(0,ctx.currentTime);g.gain.linearRampToValueAtTime(.16,ctx.currentTime+.08);g.connect(ctx.destination);
   const o1=ctx.createOscillator();o1.type='sine';o1.frequency.value=b;o1.connect(g);o1.start();
   const o2=ctx.createOscillator();o2.type='sine';o2.frequency.value=b*sb/sa;o2.connect(g);o2.start();
-  snd.oscs=[o1,o2];snd.gain=g;snd.playing=true;$('sPlayBtn').classList.add('playing');$('sPlayIco').innerHTML='&#9646;&#9646;';startWv();updSnd()}
+  snd.oscs=[o1,o2];snd.gain=g;snd.playing=true;$('sPlayBtn').classList.add('playing');$('sPlayIco').innerHTML='&#9646;&#9646;';startWv();
+  sndScaff.playCount++;if(sndScaff.phase===1&&sndScaff.playCount>=sndScaff.revealThreshold)sndScaffAdvance(2);
+  updSnd()}
 function stopSnd(){if(!snd.oscs.length)return;snd.gain.gain.linearRampToValueAtTime(0,snd.ctx.currentTime+.1);const o=snd.oscs;setTimeout(()=>o.forEach(x=>{try{x.stop()}catch(e){}}),120);snd.oscs=[];snd.playing=false;$('sPlayBtn').classList.remove('playing');$('sPlayIco').innerHTML='&#9654;';stopWv()}
 function stopSndNow(){snd.oscs.forEach(o=>{try{o.stop()}catch(e){}});snd.oscs=[]}
 function updFreqs(){if(!snd.playing||!snd.oscs.length)return;const b=264,[sa,sb]=simplify(snd.a,snd.b);snd.oscs[0].frequency.setTargetAtTime(b,snd.ctx.currentTime,.02);snd.oscs[1].frequency.setTargetAtTime(b*sb/sa,snd.ctx.currentTime,.02);updSnd()}
@@ -1046,11 +1169,15 @@ function bldWv(){const el=$('waveVis');el.innerHTML='';for(let i=0;i<10;i++){con
 function startWv(){const bars=$('waveVis').children;for(const b of bars){b.classList.add('active');b.style.height=(8+Math.random()*30)+'px'};snd.wI=setInterval(()=>{for(const b of bars)b.style.height=(6+Math.random()*34)+'px'},180)}
 function stopWv(){clearInterval(snd.wI);for(const b of $('waveVis').children){b.classList.remove('active');b.style.height='6px'}}
 function recSnd(){const c=consonance(snd.a,snd.b);snd.recs.push({a:snd.a,b:snd.b,c});renSndRec();
+  if(sndScaff.phase===2){sndScaff.recCountInP2++;if(sndScaff.recCountInP2>=2)sndScaffAdvance(3)}
   if(c.s>=.6){snd.found++;if(snd.found>=snd.goal){fb('sFB','success','모두 찾았어요!');boom('대단해요!','var(--purple)')}else fb('sFB','success',`좋아요! ${snd.found}/${snd.goal}`);showReflection('sound',{a:snd.a,b:snd.b})}else fb('sFB','hint','더 어울리는 소리를 찾아보세요!')}
-function renSndRec(){let h='';snd.recs.forEach((r,i)=>{h+=`<tr class="${i===snd.recs.length-1?'latest':''}"><td>${i+1}</td><td>${r.a}칸</td><td>${r.b}칸</td><td>${r.c.f}</td><td><button class="replay-btn" onclick="playOnce(${r.a},${r.b})">&#9654;</button></td></tr>`});$('sLog').innerHTML=h}
+function renSndRec(){let h='';snd.recs.forEach((r,i)=>{
+  const showRatio=sndScaff.phase>=3,showNums=sndScaff.phase>=2;
+  const aD=showNums?r.a+'\uCE78':'?',bD=showNums?r.b+'\uCE78':'?';
+  h+=`<tr class="${i===snd.recs.length-1?'latest':''}"><td>${i+1}</td><td>${aD}</td><td>${bD}</td><td>${r.c.f}${showRatio?' <span style="font-size:.7rem;color:var(--text-sub)">'+r.a+':'+r.b+'</span>':''}</td><td><button class="replay-btn" onclick="playOnce(${r.a},${r.b})">&#9654;</button></td></tr>`});$('sLog').innerHTML=h}
 function clrSndRec(){snd.recs=[];$('sLog').innerHTML=''}
 function rstSndTask(){snd.found=0;clrSndRec();$('sFB').innerHTML='';$('sTDesc').textContent=`블록을 조절하고 재생해서 잘 어울리는 소리 조합을 ${snd.goal}개 찾아보세요!`}
-function rstSndAll(){if(snd.playing)stopSnd();snd.a=2;snd.b=3;rstSndTask();updSnd()}
+function rstSndAll(){if(snd.playing)stopSnd();snd.a=2;snd.b=3;sndScaff.phase=1;sndScaff.playCount=0;sndScaff.recCountInP2=0;$('sndRevealAllBtn').style.display='';rstSndTask();updSnd()}
 
 // ━━━━━━ 2.5 HARMONY ROOM (화음 감상실) ━━━━━━
 const C4=261.63;
@@ -1067,6 +1194,7 @@ const PKEYS=[
 const INTERVALS={'1:1':'같은음','9:8':'장2도','81:64':'장3도','4:3':'완전4도','3:2':'완전5도','27:16':'장6도','243:128':'장7도','2:1':'옥타브'};
 let pianoSel=4; // default: 솔
 let waveAnimId=null;
+const harmScaff={phase:1,keysPlayed:new Set(),pairsHeard:0};
 
 function pianoFreq(i){return C4*PKEYS[i].ratio[0]/PKEYS[i].ratio[1]}
 function pianoPlayNote(freq,dur){
@@ -1079,6 +1207,8 @@ function pianoPlayTwo(f1,f2,dur){pianoPlayNote(f1,dur);pianoPlayNote(f2,dur)}
 function pianoPlayTogether(){
   const f1=C4,f2=pianoFreq(pianoSel);
   pianoPlayTwo(f1,f2,1.5);drawWaveAnim();
+  harmScaff.pairsHeard++;
+  if(harmScaff.phase===2&&harmScaff.pairsHeard>=2)harmScaffAdvance(3);
 }
 async function pianoPlaySeq(){
   const f1=C4,f2=pianoFreq(pianoSel);
@@ -1093,10 +1223,14 @@ function buildPiano(){
     if(i===0)cls+=' pk-ref';
     if(i===pianoSel&&i!==0)cls+=' pk-sel';
     el.className=cls;
-    el.innerHTML=`${i===0?'<div class="pk-tag">기본음</div>':''}<div class="pk-note" style="color:${k.color}">${k.name}</div><div class="pk-hz">${freq.toFixed(0)}Hz</div><div class="pk-ratio">${k.ratio[0]}:${k.ratio[1]}</div>`;
+    const hzHtml=harmScaff.phase>=2?`<div class="pk-hz">${freq.toFixed(0)}Hz</div>`:'';
+    const ratioHtml=harmScaff.phase>=3?`<div class="pk-ratio">${k.ratio[0]}:${k.ratio[1]}</div>`:'';
+    el.innerHTML=`${i===0?'<div class="pk-tag">기본음</div>':''}<div class="pk-note" style="color:${k.color}">${k.name}</div>${hzHtml}${ratioHtml}`;
     el.addEventListener('click',()=>{
       pianoPlayNote(freq,.7);
       el.classList.remove('pk-press');void el.offsetWidth;el.classList.add('pk-press');
+      harmScaff.keysPlayed.add(i);
+      if(harmScaff.phase===1&&harmScaff.keysPlayed.size>=3)harmScaffAdvance(2);
       if(i!==0){pianoSel=i;buildPiano();updatePianoInfo();drawWaveAnim()}
       else updatePianoInfo();
     });
@@ -1115,8 +1249,29 @@ function updatePianoInfo(){
   else if(sum<=20){stars=3;level='보통'}
   else{stars=1;level='잘 안 어울림'}
   const starStr='\u2605'.repeat(stars)+'\u2606'.repeat(5-stars);
+  // Phase 1: only feeling, no numbers
+  if(harmScaff.phase===1){
+    info.innerHTML=`<div class="hi-title">이 소리, 어울리나요?</div>
+      <div class="star-rating" style="font-size:1.4rem">${starStr}</div>
+      <div class="hi-detail" style="margin-top:8px;color:var(--purple)">${level}</div>
+      <div class="hi-detail" style="margin-top:6px;font-size:.8rem;color:var(--text-sub)">여러 건반을 눌러 소리를 느껴 보세요!</div>`;
+    return;
+  }
+  // Phase 2: Hz but no ratio
+  if(harmScaff.phase===2){
+    info.innerHTML=`<div class="hi-title">도 vs ${k.name}(${k.en})</div>
+      <div class="star-rating" style="font-size:1.2rem">${starStr} ${level}</div>
+      <div class="hi-detail" style="margin-top:8px">
+        <strong>도:</strong> ${C4.toFixed(0)}Hz &nbsp; <strong>${k.name}:</strong> ${freq.toFixed(0)}Hz<br>
+        <strong>음정:</strong> ${intv}<br>
+        ${k.name}은 도의 <strong>${(k.ratio[0]/k.ratio[1]).toFixed(3)}배</strong> 주파수
+      </div>
+      <div class="hi-detail" style="margin-top:6px;font-size:.78rem;color:var(--purple)">"함께 듣기"를 눌러 비율을 알아보세요!</div>`;
+    return;
+  }
+  // Phase 3: full display
   info.innerHTML=`<div class="hi-title">도 vs ${k.name}(${k.en})</div>
-    <div class="hi-ratio-big">${k.ratio[0]} : ${k.ratio[1]}</div>
+    <div class="hi-ratio-big scaff-reveal">${k.ratio[0]} : ${k.ratio[1]}</div>
     <div class="star-rating">${starStr} ${level}</div>
     <div class="hi-detail" style="margin-top:8px">
       <strong>도:</strong> ${C4.toFixed(0)}Hz &nbsp; <strong>${k.name}:</strong> ${freq.toFixed(0)}Hz<br>
@@ -1124,7 +1279,20 @@ function updatePianoInfo(){
       ${k.name}은 도의 <strong>${(k.ratio[0]/k.ratio[1]).toFixed(3)}배</strong> 주파수
     </div>`;
 }
-function resetPiano(){pianoSel=4;buildPiano();updatePianoInfo();stopWaveAnim();$('waveCard').style.display='none';$('waveExplain').style.display='none'}
+function harmScaffAdvance(toPhase){
+  if(harmScaff.phase>=toPhase)return;harmScaff.phase=toPhase;
+  if(toPhase===2){
+    const msg=document.createElement('div');msg.className='scaff-msg scaff-msg-blue';msg.textContent='\u{1F50D} 주파수를 확인해 볼까요?';
+    $('pianoInfo').prepend(msg);setTimeout(()=>msg.remove(),2500);
+  }
+  if(toPhase===3){
+    const msg=document.createElement('div');msg.className='scaff-msg scaff-msg-blue';msg.textContent='\u{1F3B5} 비율로 표현하면 이렇게 돼요!';
+    $('pianoInfo').prepend(msg);setTimeout(()=>msg.remove(),2500);
+  }
+  buildPiano();updatePianoInfo();
+}
+function harmScaffRevealAll(){harmScaff.phase=3;harmScaff.keysPlayed=new Set([0,1,2,3,4,5,6,7]);harmScaff.pairsHeard=2;buildPiano();updatePianoInfo();$('harmRevealAllBtn').style.display='none'}
+function resetPiano(){pianoSel=4;harmScaff.phase=1;harmScaff.keysPlayed=new Set();harmScaff.pairsHeard=0;$('harmRevealAllBtn').style.display='';buildPiano();updatePianoInfo();stopWaveAnim();$('waveCard').style.display='none';$('waveExplain').style.display='none'}
 
 // Wave animation
 function stopWaveAnim(){if(waveAnimId){cancelAnimationFrame(waveAnimId);waveAnimId=null}}
@@ -1307,7 +1475,19 @@ function pickMission(idx){
 
 function setScale(s){
   modelScale=s;propSolved=false;propAttempts=0;
-  document.querySelectorAll('#lab-model .scale-chip').forEach(c=>c.classList.toggle('active',parseInt(c.textContent.split(':')[1])===s));
+  // Track unique scales tried for scaffolding
+  modScaff.scalesTried.add(s);
+  modScaff.scalesTriedCount=modScaff.scalesTried.size;
+  if(modScaff.phase===1&&modScaff.scalesTriedCount>=3){
+    modScaff.phase=2;
+    updateScaleChipLabels();
+    applyModScaffUI();
+    boom('&#x1F522; 발견!','var(--navy)');
+  }
+  document.querySelectorAll('#lab-model .scale-chip').forEach(c=>{
+    const cs=parseInt(c.dataset.scale);
+    c.classList.toggle('active',cs===s);
+  });
   if(modelMode==='explore'){
     calcModel();
   } else {
@@ -1327,22 +1507,33 @@ function calcModel(){
   if(modelMode==='challenge'&&!propSolved)return;
   const W=parseInt($('realW').value)||100,H=parseInt($('realH').value)||100;
   const mW=(W/modelScale).toFixed(1),mH=(H/modelScale).toFixed(1);
+  const inPhase1=modScaff.phase===1;
   let limitInfo='';
   if(curMission>=0){
     const m=missions[curMission];
     const fitsW=parseFloat(mW)<=m.limitW,fitsH=parseFloat(mH)<=m.limitH;
     const fits=fitsW&&fitsH;
-    limitInfo=`<div class="result-row"><span class="result-label">${m.limitLabel} 가로</span><span class="result-val">${m.limitW} cm</span></div>
-      <div class="result-row"><span class="result-label">${m.limitLabel} 세로</span><span class="result-val">${m.limitH} cm</span></div>
+    limitInfo=`<div class="result-row"><span class="result-label">${m.limitLabel} 가로</span><span class="result-val">${inPhase1?'?':m.limitW+' cm'}</span></div>
+      <div class="result-row"><span class="result-label">${m.limitLabel} 세로</span><span class="result-val">${inPhase1?'?':m.limitH+' cm'}</span></div>
       <div class="result-row"><span class="result-label">들어가나요?</span><span class="result-val" style="color:${fits?'var(--teal)':'var(--red)'}">${fits?'&#x2705; 들어가요!':'&#x274C; 안 들어가요!'}</span></div>`;
   }
-  $('modelResult').innerHTML=`<div class="result-title">&#x1F4D0; 모형 크기 (1:${modelScale})</div>
-    <div class="result-row"><span class="result-label">실제 가로</span><span class="result-val">${W} cm</span></div>
-    <div class="result-row"><span class="result-label">실제 세로</span><span class="result-val">${H} cm</span></div>
-    <div class="result-row"><span class="result-label">모형 가로</span><span class="result-val" style="color:var(--blue)">${mW} cm</span></div>
-    <div class="result-row"><span class="result-label">모형 세로</span><span class="result-val" style="color:var(--blue)">${mH} cm</span></div>
-    <div class="result-row"><span class="result-label">축소 비율</span><span class="result-val">1 : ${modelScale}</span></div>
-    ${limitInfo}`;
+  if(inPhase1){
+    $('modelResult').innerHTML=`<div class="result-title">&#x1F4D0; 모형 크기</div>
+      <div class="result-row"><span class="result-label">실제 가로</span><span class="result-val">${W} cm</span></div>
+      <div class="result-row"><span class="result-label">실제 세로</span><span class="result-val">${H} cm</span></div>
+      <div class="result-row"><span class="result-label">모형 가로</span><span class="result-val" style="color:var(--blue)">? cm</span></div>
+      <div class="result-row"><span class="result-label">모형 세로</span><span class="result-val" style="color:var(--blue)">? cm</span></div>
+      <div class="result-row"><span class="result-label">축소 비율</span><span class="result-val">?</span></div>
+      ${limitInfo}`;
+  } else {
+    $('modelResult').innerHTML=`<div class="result-title">&#x1F4D0; 모형 크기 (1:${modelScale})</div>
+      <div class="result-row"><span class="result-label">실제 가로</span><span class="result-val">${W} cm</span></div>
+      <div class="result-row"><span class="result-label">실제 세로</span><span class="result-val">${H} cm</span></div>
+      <div class="result-row"><span class="result-label">모형 가로</span><span class="result-val" style="color:var(--blue)">${mW} cm</span></div>
+      <div class="result-row"><span class="result-label">모형 세로</span><span class="result-val" style="color:var(--blue)">${mH} cm</span></div>
+      <div class="result-row"><span class="result-label">축소 비율</span><span class="result-val">1 : ${modelScale}</span></div>
+      ${limitInfo}`;
+  }
   // Visual comparison
   const maxPx=160,scale1=maxPx/Math.max(W,H);
   const rW=W*scale1,rH=H*scale1;
@@ -1352,14 +1543,14 @@ function calcModel(){
   if(curMission>=0){
     const m=missions[curMission];
     const lPxW=m.limitW*scale1,lPxH=m.limitH*scale1;
-    limitBox=`<div class="compare-item"><div class="box" style="width:${lPxW}px;height:${lPxH}px;background:#FFF3CD;border-color:#FFE082;border-style:dashed;font-size:${Math.min(lPxW,lPxH)*.15}px">${m.limitW}×${m.limitH}</div><div class="label">${m.limitLabel}</div></div>`;
+    limitBox=`<div class="compare-item"><div class="box" style="width:${lPxW}px;height:${lPxH}px;background:#FFF3CD;border-color:#FFE082;border-style:dashed;font-size:${Math.min(lPxW,lPxH)*.15}px">${inPhase1?'':m.limitW+'×'+m.limitH}</div><div class="label">${m.limitLabel}</div></div>`;
   }
   $('compareVis').innerHTML=`
-    <div class="compare-item"><div class="box" style="width:${rW}px;height:${rH}px;background:var(--navy-light);font-size:${Math.min(rW,rH)*.12}px">${W}×${H}</div><div class="label">실물</div></div>
+    <div class="compare-item"><div class="box" style="width:${rW}px;height:${rH}px;background:var(--navy-light);font-size:${Math.min(rW,rH)*.12}px">${inPhase1?'':W+'×'+H}</div><div class="label">실물</div></div>
     <div style="font-size:1.2rem;color:var(--text-sub);align-self:center">&#x27A1;</div>
-    <div class="compare-item"><div class="box" style="width:${mPxW}px;height:${mPxH}px;background:var(--blue-light);border-color:var(--blue);font-size:${Math.min(mPxW,mPxH)*.18}px">${mW}×${mH}</div><div class="label">모형 (1:${modelScale})</div></div>
+    <div class="compare-item"><div class="box" style="width:${mPxW}px;height:${mPxH}px;background:var(--blue-light);border-color:var(--blue);font-size:${Math.min(mPxW,mPxH)*.18}px">${inPhase1?'':mW+'×'+mH}</div><div class="label">${inPhase1?'모형':'모형 (1:'+modelScale+')'}</div></div>
     ${limitBox?'<div style="font-size:1.2rem;color:var(--text-sub);align-self:center">&#x2194;</div>'+limitBox:''}`;
-  $('compareLabel').textContent='실제 크기와 모형 크기 비교';
+  $('compareLabel').textContent=inPhase1?'크기가 어떻게 달라지나요?':'실제 크기와 모형 크기 비교';
 }
 
 function checkModelAnswer(){
@@ -1555,7 +1746,7 @@ function calcModelVisualOnly(){
   if(curMission>=0){
     const m=missions[curMission];
     const lPxW=m.limitW*scale1,lPxH=m.limitH*scale1;
-    limitBox=`<div class="compare-item"><div class="box" style="width:${lPxW}px;height:${lPxH}px;background:#FFF3CD;border-color:#FFE082;border-style:dashed;font-size:${Math.min(lPxW,lPxH)*.15}px">${m.limitW}&times;${m.limitH}</div><div class="label">${m.limitLabel}</div></div>`;
+    limitBox=`<div class="compare-item"><div class="box" style="width:${lPxW}px;height:${lPxH}px;background:#FFF3CD;border-color:#FFE082;border-style:dashed;font-size:${Math.min(lPxW,lPxH)*.15}px">${inPhase1?'':m.limitW+'&times;'+m.limitH}</div><div class="label">${m.limitLabel}</div></div>`;
   }
   $('compareVis').innerHTML=`
     <div class="compare-item"><div class="box" style="width:${rW}px;height:${rH}px;background:var(--navy-light);font-size:${Math.min(rW,rH)*.12}px">${W}&times;${H}</div><div class="label">&#x1F3E2; 실물</div></div>
@@ -2065,7 +2256,7 @@ $('mapCanvas').addEventListener('click',function(e){
 function clearMap(){mapPoints.length=0;drawMap();calcMapDist();$('mapHint').textContent='지도 위를 클릭해서 두 지점을 찍어 보세요!'}
 
 // ━━━━━━ INIT ━━━━━━
-bldWv();updSnd();updColor();pickMission(0);startRecipeMission(0);drawMap();buildPiano();updatePianoInfo();
+bldWv();updSnd();updColor();pickMission(0);startRecipeMission(0);drawMap();buildPiano();updatePianoInfo();applyColScaffUI();updateScaleChipLabels();applyModScaffUI();
 </script>
 </body>
 </html>
